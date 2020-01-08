@@ -1,0 +1,67 @@
+os: linux
+language: go
+
+go:
+  - "1.13"
+
+serivices:
+  - docker
+
+addons:
+  apt:
+    update: true
+    packages:
+      - build-essential
+      - libssl-dev
+      - uuid-dev
+      - libgpgme11-dev
+      - squashfs-tools
+      - libseccomp-dev
+      - pkg-config
+      - make
+      - wget
+      - cryptsetup-bin
+      - git
+
+before_install:
+  - gimme list
+
+env:
+  global:
+    - GIT_ACCOUNT=tischlab-travis-ci
+    - secure: "4kPf+ZfsPSRLhq/1eSrieKHvBV76d5zJ6T+bYzWznjCSP/UZSduhHXmoj0HJWMRpFUjmygt+gbSZDlmTPyrvOav4DJ6LlMdEFz+vAdeScgegyQPZIfpe4XEHCrU6Q8T+KT/GXSt3zRXMAemKUi9bnhuoLuJxOXZZipSVrRRgp2OZ/+LOuySGr1bzTiPo4eARMfkn5OgNphOMeySE9Zn2BzRvHqcl2mj6vUAnR0DLPeOJDz+5HnTE1ZgGq+KnUiQvrJqE9mreU6veDW9KIjVNkzqowWF2/poDQNrEYJUWe2IESjlECVel2XPt0KYfDC3gMaf8Jum8kpJSsexHqnOcqXn0WI1q0bau0OiNldyNuOo9//ZJjQss/rQXe6lCWn3Vuombnaf7L5UzXluqM729RB1WjsajSUm235WjJm3FgFqHHdDzSnQEA+91lyP3VtJ23oxl7xpDCAXHD8cKE9avpd/8D989sYdCSb+wPo237Bh32s31zMECbniSZvx72Y26KVgUHrtdfVD8ashKSsYqGA0uzgFGd4lTKoKgUYITkUmrEeWisZm3UH2/C0oQRd7Ydcm5CrNcznlQw4aPkA2d5lqyNjLi4H0LglrB8YjiwVgmuhMX1VmzxbGq6RjE45r2VCF147WX1PMTbG+RybNrWQqUy4Hhe/Mdv19w0KrJX4c="
+
+script:
+  # Install singularity
+  - git clone https://github.com/sylabs/singularity.git
+  - cd singularity
+  - git checkout v3.5.0
+  - ./mconfig
+  - make -C ./builddir
+  - sudo make -C ./builddir install
+  - cd ..
+  # Bulid docker file
+  - mkdir /tmp/image
+  - docker build -t moseq2 --build-arg SERVICE_TOKEN=${SERVICE_ACCOUNT_TOKEN} --build-arg GIT_NAME=${GIT_ACCOUNT} .
+  # Convert docker image to singularity image https://github.com/singularityhub/docker2singularity/blob/master/README.md
+  - docker run -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/image:/output --privileged -t --rm quay.io/singularity/docker2singularity moseq2
+  - ls /tmp/image
+
+before_deploy:
+  - export TRAVIS_TAG="v${TRAVIS_BUILD_NUMBER}"
+  - echo $TRAVIS_TAG
+  - git tag $TRAVIS_TAG
+  - export RELEASE_NAME=moseq2.${TRAVIS_TAG}.tar.gz
+  - mv /tmp/image .
+  - tar -czvf ${RELEASE_NAME} image
+
+deploy:
+  provider: releases
+  api_key:
+    secure: ${SERVICE_ACCOUNT_TOKEN}
+  skip_cleanup: true
+  file_glob: true
+  file: "${RELEASE_NAME}"
+  tag_name: "$TRAVIS_TAG"
+  on:
+    branch: master
