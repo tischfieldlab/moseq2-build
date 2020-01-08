@@ -21,12 +21,12 @@ RUN source ~/.bashrc \
     && conda create -n moseq2 python=3.6 -y \
     && conda install -c conda-forge ffmpeg \
     && conda activate moseq2 \
-    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extract.git \
-    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-pca.git \
-    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-model.git \
-    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-batch.git \
-    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-viz.git \
-    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git
+    && pip install git+https://${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extract.git \
+    && pip install git+https://${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-pca.git \
+    && pip install git+https://${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-model.git \
+    && pip install git+https://${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-batch.git \
+    && pip install git+https://${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-viz.git \
+    && pip install git+https://${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git
 
 # Run tests to make sure all repos work
 RUN source activate moseq2 \
