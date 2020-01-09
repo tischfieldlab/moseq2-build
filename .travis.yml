@@ -62,6 +62,6 @@ deploy:
   skip_cleanup: true
   file_glob: true
   file: "${RELEASE_NAME}"
-  tag_name: "$TRAVIS_TAG"
+  tag_name: "${TRAVIS_TAG}"
   on:
     branch: master
