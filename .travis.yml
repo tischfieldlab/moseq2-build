@@ -25,6 +25,7 @@ addons:
 
 before_install:
   - gimme list
+  - echo ${GIT_ACCOUNT}
 
 env:
   global:
