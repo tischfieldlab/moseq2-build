@@ -36,7 +36,7 @@ RUN source activate moseq2 \
     && rm -rf moseq2-extras
 
 # Initialize the shell for conda and activate moseq2 on startup
-RUN conda init bash && echo "conda activate moseq2" >> ~/.bashrc
+SHELL ["conda", "run", "-n", "moseq2", "/bin/bash", "-c"]
 
 # Setup entry point for bash
 ENTRYPOINT ["/bin/bash"]
