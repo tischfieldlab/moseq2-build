@@ -37,7 +37,7 @@ RUN source activate moseq2 \
     && mkdir /moseq2_data \
     && mkdir /moseq2_data/flip_files \
     # Download the flip classifier to a known directory
-    && moseq2-extract download-flip-file >>> "1" 
+    && moseq2-extract download-flip-file --output-dir /moseq2_data/flip_files <<< "1"
 
 # Initialize the shell for conda and activate moseq2 on startup
 SHELL ["conda", "run", "-n", "moseq2", "/bin/bash", "-c"]
