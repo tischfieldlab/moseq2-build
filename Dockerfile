@@ -33,7 +33,11 @@ RUN source activate moseq2 \
     && git clone https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git \
     && pip install "pytest>=3.6" pytest-cov codecov \
     && pytest moseq2-extras/tests/test_entry_points.py \
-    && rm -rf moseq2-extras
+    && rm -rf moseq2-extras \
+    && mkdir /moseq2_data \
+    && mkdir /moseq2_data/flip_files \
+    # Download the flip classifier to a known directory
+    && moseq2-extract download-flip-file >>> "1" 
 
 # Initialize the shell for conda and activate moseq2 on startup
 SHELL ["conda", "run", "-n", "moseq2", "/bin/bash", "-c"]
