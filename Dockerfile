@@ -42,5 +42,7 @@ RUN source activate moseq2 \
 # Initialize the shell for conda and activate moseq2 on startup
 SHELL ["conda", "run", "-n", "moseq2", "/bin/bash", "-c"]
 
+# TODO: NEED TO MAKE AN ENTRY POINT FOR THE MOSEQ2-EXTRACT COMMAND STUFF
+
 # Setup entry point for bash
 ENTRYPOINT ["/bin/bash"]

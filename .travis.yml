@@ -65,4 +65,4 @@ deploy:
   file: "${RELEASE_NAME}"
   tag_name: "${TRAVIS_TAG}"
   on:
-    branch: master
+    branch: entry-point-automation
