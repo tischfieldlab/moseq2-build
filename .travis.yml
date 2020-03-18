@@ -58,8 +58,7 @@ before_deploy:
 
 deploy:
   provider: releases
-  api_key:
-    secure: ${SERVICE_ACCOUNT_TOKEN}
+  api_key: ${SERVICE_ACCOUNT_TOKEN}
   skip_cleanup: true
   file_glob: true
   file: "${RELEASE_NAME}"
