@@ -54,7 +54,7 @@ before_deploy:
   - echo $TRAVIS_TAG
   - git tag $TRAVIS_TAG
   - export SINGULARITY_RELEASE_NAME=moseq2-singularity.${TRAVIS_TAG}.tar.gz
-  - exoirt DOCKER_RELEASE_NAME=moseq2-docker.${TRAVIS_TAG}.tar.gz
+  - export DOCKER_RELEASE_NAME=moseq2-docker.${TRAVIS_TAG}.tar.gz
   - mv /tmp/image .
   - tar -czvf ${SINGULARITY_RELEASE_NAME} image
   - tar -czvf ${DOCKER_RELEASE_NAME} moseq2-docker.tar
