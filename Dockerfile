@@ -9,7 +9,7 @@ SHELL ["/bin/bash", "-c"]
 # Install dependencies
 RUN apt-get update --fix-missing -y \
     && apt-get install build-essential \
-    libxrender-dev libsm6 libglib2.0-0 -y
+    libxrender-dev libsm6 libglib2.0-0 vim-gtk3 -y
 
 # Arguments for cloning down the repos and installing them to the conda environment
 ARG GIT_NAME
@@ -39,10 +39,11 @@ RUN source activate moseq2 \
     # Download the flip classifier to a known directory
     && moseq2-extract download-flip-file --output-dir ~/moseq2_data/flip_files <<< "1"
 
+# Add env activation in bashrc file
+RUN echo 'source actiavte moseq2' >> ~/.bashrc
+
 # Initialize the shell for conda and activate moseq2 on startup
 SHELL ["conda", "run", "-n", "moseq2", "/bin/bash", "-c"]
-
-# TODO: NEED TO MAKE AN ENTRY POINT FOR THE MOSEQ2-EXTRACT COMMAND STUFF
 
 # Setup entry point for bash
 ENTRYPOINT ["/bin/bash"]
