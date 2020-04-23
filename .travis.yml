@@ -46,23 +46,27 @@ script:
   - docker build -t moseq2 --build-arg SERVICE_TOKEN=${SERVICE_ACCOUNT_TOKEN} --build-arg GIT_NAME=${GIT_ACCOUNT} .
   # Convert docker image to singularity image https://github.com/singularityhub/docker2singularity/blob/master/README.md
   - docker run -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/image:/output --privileged -t --rm quay.io/singularity/docker2singularity moseq2
+  - docker save moseq2 > moseq2-docker.tar
   - ls /tmp/image
 
 before_deploy:
   - export TRAVIS_TAG="v${TRAVIS_BUILD_NUMBER}"
   - echo $TRAVIS_TAG
   - git tag $TRAVIS_TAG
-  - export RELEASE_NAME=moseq2.${TRAVIS_TAG}.tar.gz
+  - export SINGULARITY_RELEASE_NAME=moseq2-singularity.${TRAVIS_TAG}.tar.gz
+  - export DOCKER_RELEASE_NAME=moseq2-docker.${TRAVIS_TAG}.tar.gz
   - mv /tmp/image .
-  - tar -czvf ${RELEASE_NAME} image
+  - tar -czvf ${SINGULARITY_RELEASE_NAME} image
+  - tar -czvf ${DOCKER_RELEASE_NAME} moseq2-docker.tar
 
 deploy:
   provider: releases
-  api_key:
-    secure: ${SERVICE_ACCOUNT_TOKEN}
+  api_key: ${SERVICE_ACCOUNT_TOKEN}
   skip_cleanup: true
   file_glob: true
-  file: "${RELEASE_NAME}"
+  file: 
+    - "${SINGULARITY_RELEASE_NAME}"
+    - "${DOCKER_RELEASE_NAME}"
   tag_name: "${TRAVIS_TAG}"
   on:
     branch: master
