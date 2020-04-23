@@ -17,6 +17,7 @@ setup(
     license='MIT License',
     install_requires=[
         'ruamel.yaml',
+        'termcolor',
     ],
     description='Location of environment images for use during the pipeline',
     packages=setuptools.find_packages(),

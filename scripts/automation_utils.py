@@ -1,188 +1,204 @@
 import argparse
 import ruamel.yaml as yaml
-import os, sys, re
+from termcolor import colored
+import os, sys, re, time, subprocess, threading
 from stat import S_IEXEC
+
+doneWorking = False
 
 DEFAULT_FLIP_PATH = '/moseq2_data/flip_files/flip_classifier/flip_classifier_k2_c57_10to13weeks.pkl'
 BATCH_TABLE = {'extract-batch': ['--input-dir', '-i', '--config-file', '-c', '--filename']}
 EXTRACT_TABLE = {'generate-config': ['-o', '--output-file'],
-                 'extract': ['--config-file', '--flip-classifier']}
+                'extract': ['--config-file', '--flip-classifier']}
+SINGULARITY_COMS = {'exec': 'singularity exec', 'mount': '-B'}
 
 def main():
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers()
-
-    # Extract related arguments
+    subparsers = parser.add_subparsers(title="moseq2 cli entrypoints.", dest="command")
+    subparserList = []
+    
     parser_extract = subparsers.add_parser('moseq2-extract')
-    
-    # Singularity specific arguments
-    parser_extract.add_argument('--singularity-image', nargs='?', help='Location for the singularity image file.', dest='singularity_image_path', default='', type=str, const=True)
-
-    # Docker specific arguments
-    parser_extract.add_argument('--docker-image', nargs='?', help='Location for the docker image file.', dest='docker_image_path', default='', type=str, const=True)
-
-    parser_extract.add_argument('remainder', nargs=argparse.REMAINDER)
-    parser_extract.set_defaults(func=extract_entrypoint)
-
-    
-    # Batch related arguments
     parser_batch = subparsers.add_parser('moseq2-batch')
-    
-    # Singularity specific arguments
-    parser_batch.add_argument('--singularity-image', nargs='?', help='Location for the singularity image file.', dest='singularity_image_path', default='', type=str, const=True)
 
-    # Docker specific arguments
-    parser_batch.add_argument('--docker-image', nargs='?', help='Location for the docker image file.', dest='docker_image_path', default='', type=str, const=True)
+    subparserList.append(parser_extract)
+    subparserList.append(parser_batch)
 
-    parser_batch.add_argument('remainder', nargs=argparse.REMAINDER)
-    parser_batch.set_defaults(func=batch_entrypoint)
+    arguments = [
+            (('--path', '-p'), {'default':None, 'nargs':'?','help':'Location of the image file to be used.',
+                'dest':'imagePath'}),
+            (('remainder',), {'nargs':argparse.REMAINDER})
+            ]
+
+    for p in subparserList:
+        for pos, keyword in arguments:
+            p.add_argument(*pos, **keyword)
+            p.set_defaults(func=entrypoint)
 
     args = parser.parse_args()
     args.func(args)
-    return 0
 #end main()
 
-def batch_entrypoint(args):
-    if args.singularity_image_path is not '':
-        singularity_batch(args)
-    elif args.docker_image_path is not '':
-        docker_batch(args)
+def entrypoint(args):
+
+    fileCommands = None
+
+    if (args.imagePath is None):
+        print(colored("Path not passed in...", 'red'))
+        exit(1)
+
+    if (args.imagePath.endswith('.sif')):
+        print(colored("\nDetected singularity image at {}\n".format(os.path.dirname(os.path.abspath(args.imagePath))),
+            'white', attrs=['bold']))
+        fileCommands = SINGULARITY_COMS
+
+    # Since Docker doesn't have an extension, we need to figure
+    # out if this is a docker file...
     else:
-        print("Please pass in the path to either the docker image or singularity image.")
-        exit(0)
-#end batch_entrypoint()
+        print("urggg.")
 
-def singularity_batch(args):
-    # Loop thru the remaining args
-    pathKeys = []
-    mountCommand = ''
-    for param in BATCH_TABLE[args.remainder[0]]:
-        if param in args.remainder:
-            idx = args.remainder.index(param) + 1
-            pathKeys.append(os.path.abspath(args.remainder[idx]))
+    if (args.command == 'moseq2-batch'):
+        handle_batch(args, fileCommands)
 
-    # Get the longest pathname that is common between all of the paths
-    if len(pathKeys) != 0:
-        longestCommonPath = os.path.dirname(os.path.commonprefix(pathKeys))
+    elif (args.command == 'moseq2-extract'):
+        handle_extract(args, fileCommands)
 
-        if longestCommonPath == "\\" or longestCommonPath == "/":
-            print("Common path is root directory, so it will not be mounted.")
+    print(colored("\nExiting now\t\t" + u'\u2705', 'green', attrs=['bold']))
+#end extract_entrypoint()
+
+def handle_batch(args, command):
+    mountCommand = mountDirectories(args, command["mount"], BATCH_TABLE)
+
+    configFile = ''
+    if ('-c' not in args.remainder and '--config-file' not in args.remainder):
+        print(colored("No config file was passed in... generating one now.\n", 'yellow'))
+        bashCommand = " bash -c 'source activate moseq2; moseq2-extract generate-config;'"
+        configCommand = command["exec"] + ' ' + mountCommand + ' ' + args.imagePath + bashCommand
+        result = executeCommand(configCommand)
+
+        if (len(result[1]) != 0):
+            print(colored("\nConfig file generated\t" + u'\u274C', 'red', attrs=['bold']))
+            exit(1)
         else:
-            mountCommand = "-B" + " " + longestCommonPath
+            place_classifier_in_yaml("config.yaml", DEFAULT_FLIP_PATH)
+            configFile = " -c config.yaml"
+            print(colored("\nConfig file generated\t" + u'\u2705', 'green', attrs=['bold']))
 
-    # See if there was not a config file that was passed in
-    if '-c' not in args.remainder and '--config-file' not in args.remainder:
-        print("Please pass in a config file to be used during extraction. To generate one, type moseq2-extract --help.")
-        exit(0)
+    bashCommand = " bash -c 'source activate moseq2; moseq2-batch " + ' '.join(args.remainder) + configFile + "'"
+    finalCommand = command["exec"] + ' ' + mountCommand + ' ' + args.imagePath + bashCommand
+    result = executeCommand(finalCommand)
 
-    # Write out the command
-    with open('temp.sh', 'w') as f:
-        f.write('source activate moseq2\n')
-        command = "moseq2-batch " + ' '.join(args.remainder)
-        f.write(command + '\n')
+    if (len(result[1]) != 0):
+        print(colored('Executed batch command\t' + u'\u274C', 'red', attrs=['bold']))
+        print(result[1].decode('utf-8'))
+        exit(1)
 
-    finalCommand = "singularity exec " + mountCommand + " " + args.singularity_image_path + " bash temp.sh"
-    stream = os.popen(finalCommand)
-    output = stream.read()
-
-    # We need to alter how this output looks so that it will call a singularity command.
-    if 'extract-batch' in args.remainder and 'slurm' in args.remainder:
-        
-        if not os.path.isdir('slurmTempFiles'):
-            os.mkdir('slurmTempFiles')
-        tempFileNumber = 1
-        with open('run_batch.sh', 'w') as com:
+    if ('extract-batch' in args.remainder and 'slurm' in args.remainder):
+        output = result[0].decode('utf-8')
+        finalCommand = ''
+        with open('run_batch.sh', 'w') as f:
             for line in output.split('\n'):
-                # Extract command part from the wrap command so it can be dumped in a temp file
-                commandList = re.findall(r'"([^"]*)"', line)
+                commandList = re.findall(r'"([^"]*)', line)
 
                 if len(commandList) != 0:
-                    command = commandList[0]
-                    fname = 'slurmTempFiles/temp' + str(tempFileNumber) + '.sh'
-                    tempFileNumber += 1
-                    with open(fname, 'w') as f:
-                        f.write(command)
-                    t = "singularity exec " + mountCommand + " " + args.singularity_image_path + " bash " + fname
-                    line = line.replace(command, t)
-                    com.write(line + '\n')
-                os.chmod('run_batch.sh', S_IEXEC | os.stat('run_batch.sh').st_mode)
+                    com = commandList[0]
+                    t = command["exec"] + ' ' + mountCommand + ' ' + args.imagePath + ' bash -c \'' + com
+                    line = line.replace(com, t)
+                    line = line[:-1] + "\'\";\n"
+                    finalCommand += line
+            f.write(finalCommand + '\n')
+            os.chmod('run_batch.sh', S_IEXEC | os.stat('run_batch.sh').st_mode)
 
-    else:
-        print(output)
+    print(colored('Executed batch command\t' + u'\u2705', 'green', attrs=['bold']))
+#end handle_batch()
 
-    print("Command was completed successfully.")
-    
-    os.remove('temp.sh')
-#end singularity_batch()
+def handle_extract(args, command):
+    mountCommand = mountDirectories(args, command["mount"], EXTRACT_TABLE)
 
-def docker_batch(args):
-    pass
-#end docker_batch()
+    bashCommand = " bash -c 'source activate moseq2; moseq2-extract " + ' '.join(args.remainder) + "'"
+    finalCommand = command["exec"] + ' ' + mountCommand + ' ' + args.imagePath + bashCommand
+    result = executeCommand(finalCommand)
 
-def extract_entrypoint(args):
-    print(args.singularity_image_path)
-    if args.singularity_image_path is not '':
-        singularity_extract(args)
-    elif args.docker_image_path is not '':
-        docker_extract(args)
-    else:
-        print("Please pass in the path to either the docker image or the singularity image.")
-        exit(0)
-#end singularity_extract()
+    if (len(result[1]) != 0):
+        print(colored('Executed extract command\t' + u'\u274C', 'red', attrs=['bold']))
+        exit(1)
 
-def docker_extract(args):
-    print('docker')
-#end docker_extract()
-
-def singularity_extract(args):
-    # Loop thru remaining args to see what was called
-    pathKeys = []
-    mountCommand = ''
-    for param in EXTRACT_TABLE[args.remainder[0]]:
-        if param in args.remainder:
-            idx = args.remainder.index(param) + 1
-            if idx >= len(args.remainder):
-                print("Please make sure each param has a valid argument.")
-                exit(0)
-            pathKeys.append(os.path.abspath(args.remainder[idx]))
-
-    # Get the longest pathname that is common between all of the paths pased in.
-    if len(pathKeys) != 0:
-        longestCommonPath = os.path.dirname(os.path.commonprefix(pathKeys))
-
-        if longestCommonPath == "\\" or longestCommonPath == "/":
-            print("Common path is root directory, so it will not be mounted.")
-
-        else:
-            mountCommand = "-B" + " " + longestCommonPath
-
-    # Write out the command and execute it in singularity
-    with open('temp.sh', 'w') as f:
-        f.write('source activate moseq2\n')
-        command = "moseq2-extract " + ' '.join(args.remainder)
-        f.write(command + '\n')
-
-    finalCommand = "singularity exec " + mountCommand + " " + args.singularity_image_path + " bash temp.sh"
-    stream = os.popen(finalCommand)
-    output = stream.read()
-    print(output)
-
-    # Update the flip classifier path
-    if 'generate-config' in args.remainder:
-        configPath = "config.yaml"
+    # If this is a config file command, we need to place in the path
+    # in the docker/singularity environment
+    if ('generate-config' in args.remainder):
+        configPath = 'config.path'
         if '-o' in args.remainder:
             idx = args.remainder.index('-o') + 1
+            assert(idx < len(args.remainder))
             configPath = args.remainder[idx]
         elif '--output-file' in args.remainder:
             idx = args.remainder.index('--output-file') + 1
+            assert(idx < len(args.remainder))
             configPath = args.remainder[idx]
 
         place_classifier_in_yaml(configPath, DEFAULT_FLIP_PATH)
+    print(colored('Executed extract command\t' + u'\u2705', 'green', attrs=['bold']))
+#end handle_extract()
 
-    print("Command finished successfully.")
+def executeCommand(command):
+    done = False
+    spin_thread = threading.Thread(target=spinCursor)
+    spin_thread.start()
 
-    os.remove('temp.sh')
-#end singularity_entrypoint()
+    proc = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+            stdin=subprocess.PIPE, shell=True)
+    contents = proc.communicate()
+
+    global doneWorking
+    doneWorking = True
+    spin_thread.join()
+    doneWorking = False
+
+    return contents
+#end executeCommand()
+
+def mountDirectories(args, mountString, table):
+    pathKeys = []
+    mountCommand = ''
+    if (len(args.remainder) == 0):
+        return ''
+
+    for param in table[args.remainder[0]]:
+        if param in args.remainder:
+            idx = args.remainder.index(param) + 1
+            if idx >= len(args.remainder):
+                print("Please make sure each paramater has a valid argument.")
+                exit(1)
+
+            pathKeys.append(os.path.abspath(args.remainder[idx]))
+
+    # Get the longest pathname common for all paths passed in
+    if (len(pathKeys) != 0):
+        longestCommonPath = os.path.dirname(os.path.commonprefix(pathKeys))
+
+        if (longestCommonPath == "\\" or longestCommonPath == "/"):
+            print("Common path is the root directory, so it will not be mounted.")
+
+        else:
+            mountCommand = mountString + " " + longestCommonPath
+
+    return mountCommand
+#end mountDirectories()
+
+def spinCursor():
+    global doneWorking
+    sys.stdout.flush()
+    sys.stdout.write(colored("Executing commands ", "red", attrs=['bold']))
+    while True:
+        for cursor in '|/-\\':
+            time.sleep(0.1)
+            sys.stdout.write(colored("\rExecuting commands " + cursor, "red", attrs=['bold']))
+            sys.stdout.flush()
+            if doneWorking:
+                sys.stdout.write('\n')
+                sys.stdout.write('\033[F')
+                sys.stdout.write('\033[K')
+                return
+#end spinCursor()
 
 def place_classifier_in_yaml(configPath, flipPath):
     with open(configPath, 'r') as f:
@@ -195,4 +211,3 @@ def place_classifier_in_yaml(configPath, flipPath):
 
 if __name__ == '__main__':
     main()
-
