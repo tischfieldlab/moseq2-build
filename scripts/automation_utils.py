@@ -1,10 +1,11 @@
-import argparse
+import argparse, os, re
 import ruamel.yaml as yaml
 from termcolor import colored
-import os, sys, re, time, subprocess, threading
 from stat import S_IEXEC
 
-doneWorking = False
+# local imports
+from utils.commands import executeCommand
+from utils.singularity import mountDirectories
 
 DEFAULT_FLIP_PATH = '/moseq2_data/flip_files/flip_classifier_k2_c57_10to13weeks.pkl'
 BATCH_TABLE = {'extract-batch': ['--input-dir', '-i', '--config-file', '-c', '--filename']}
@@ -39,9 +40,16 @@ def main():
 #end main()
 
 def entrypoint(args):
+        """ This function sets up our script to run properly
+        based on the given parameters. It determines what container
+        type we are running (docker or singularity), sets up the
+        corresponding command map, and calls into the proper
+        sub-routines based on the input parameters.
 
+        :type args: argparse args object
+        :param args: List of passed in arguments.
+        """
     fileCommands = None
-
     if (args.imagePath is None):
         print(colored("Path not passed in...", 'red'))
         exit(1)
@@ -66,6 +74,19 @@ def entrypoint(args):
 #end extract_entrypoint()
 
 def handle_batch(args, command):
+        """ This is the batch function entry point. In this function,
+        we do all things related to the moseq2-batch part of the
+        pipeline, only we wrap them so they can be executed within
+        a container.
+
+        :type args: argparse args object
+        :param args: List of arguments passed in as parameters.
+    
+        :type command: Dictionary of string keys that map to string values.
+        :param command: Command table setup by the entrypoint function
+        that contains the necessary command prefixes based on the
+        container program passed in. 
+        """
     mountCommand = mountDirectories(args, command["mount"], BATCH_TABLE)
 
     configFile = ''
@@ -112,6 +133,19 @@ def handle_batch(args, command):
 #end handle_batch()
 
 def handle_extract(args, command):
+        """ This is the extract function entry point. In this function,
+        we do all things related to the moseq2-extract part of the
+        pipeline, only we wrap them so they can be executed within
+        a container.
+
+        :type args: argparse args object
+        :param args: List of parameters passed in.
+    
+        :type command: Dictionary of string keys that map to string values.
+        :param command: Command table setup by the entrypoint function
+        that contains the necessary command prefixes based on the
+        container program passed in. 
+        """
     mountCommand = mountDirectories(args, command["mount"], EXTRACT_TABLE)
 
     bashCommand = " bash -c 'source activate moseq2; moseq2-extract " + ' '.join(args.remainder) + "'"
@@ -139,68 +173,20 @@ def handle_extract(args, command):
     print(colored('Executed extract command\t' + u'\u2705', 'green', attrs=['bold']))
 #end handle_extract()
 
-def executeCommand(command):
-    done = False
-    spin_thread = threading.Thread(target=spinCursor)
-    spin_thread.start()
-
-    proc = subprocess.Popen(command, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
-            stdin=subprocess.PIPE, shell=True)
-    contents = proc.communicate()
-
-    global doneWorking
-    doneWorking = True
-    spin_thread.join()
-    doneWorking = False
-
-    return contents
-#end executeCommand()
-
-def mountDirectories(args, mountString, table):
-    pathKeys = []
-    mountCommand = ''
-    if (len(args.remainder) == 0):
-        return ''
-
-    for param in table[args.remainder[0]]:
-        if param in args.remainder:
-            idx = args.remainder.index(param) + 1
-            if idx >= len(args.remainder):
-                print("Please make sure each paramater has a valid argument.")
-                exit(1)
-
-            pathKeys.append(os.path.abspath(args.remainder[idx]))
-
-    # Get the longest pathname common for all paths passed in
-    if (len(pathKeys) != 0):
-        longestCommonPath = os.path.dirname(os.path.commonprefix(pathKeys))
-
-        if (longestCommonPath == "\\" or longestCommonPath == "/"):
-            print("Common path is the root directory, so it will not be mounted.")
-
-        else:
-            mountCommand = mountString + " " + longestCommonPath
-
-    return mountCommand
-#end mountDirectories()
-
-def spinCursor():
-    global doneWorking
-    sys.stdout.flush()
-    sys.stdout.write(colored("Executing commands ", "red", attrs=['bold']))
-    while True:
-        for cursor in '|/-\\':
-            time.sleep(0.1)
-            sys.stdout.write(colored("\rExecuting commands " + cursor, "red", attrs=['bold']))
-            sys.stdout.flush()
-            if doneWorking:
-                sys.stdout.write('\n')
-                sys.stdout.write('\033[F')
-                sys.stdout.write('\033[K')
-                return
-#end spinCursor()
-
 def place_classifier_in_yaml(configPath, flipPath):
+        """ Helper function used to place the location of
+        the flip classifier pickle file defaulted to within
+        the image within the config file that gets generated for
+        extraction.
+
+        :type configPath: String
+        :param configPath: Path to the config file to edit.
+    
+        :type flipPath: String
+        :param flipPath: Path to the flip path to update in the config
+        file.
+        """
+
     with open(configPath, 'r') as f:
         contents = yaml.safe_load(f)
         contents['flip_classifier'] = flipPath
