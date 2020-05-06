@@ -1,24 +1,24 @@
 import os
 
 def mountDirectories(args, mountString, comTable):
-        """ Correctly formats the command to mount directories
-        in both singularity and docker. This is used before
-        a command is executed using either docker or singularity
-        and is resposnible for ensuring the files/directories passed
-        in are mounted and accessible within the image.
-        :type args: Python argparse arguments data structure.
-        :param args: The list of arguments passed into the script.
-    
-        :type mountString: String
-        :param mountString: String containing the correct prefix
-        argument required for mounting by docker or singularity.
-    
-        :type comTable: Dictionary
-        :param comTable: Dictionary containing the prefix arguments
-        for various commands we expose from docker and singularity.
-    
-        :rtype: String containing the full mount command.
-        """
+    """ Correctly formats the command to mount directories
+    in both singularity and docker. This is used before
+    a command is executed using either docker or singularity
+    and is resposnible for ensuring the files/directories passed
+    in are mounted and accessible within the image.
+    :type args: Python argparse arguments data structure.
+    :param args: The list of arguments passed into the script.
+
+    :type mountString: String
+    :param mountString: String containing the correct prefix
+    argument required for mounting by docker or singularity.
+
+    :type comTable: Dictionary
+    :param comTable: Dictionary containing the prefix arguments
+    for various commands we expose from docker and singularity.
+
+    :rtype: String containing the full mount command.
+    """
     pathKeys = []
     mountCommand = ''
     if (len(args.remainder) == 0):
