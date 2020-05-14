@@ -57,7 +57,7 @@ before_deploy:
   - export DOCKER_RELEASE_NAME=moseq2-docker.${TRAVIS_TAG}.tar.gz
   - mv /tmp/image .
   - tar -czvf ${SINGULARITY_RELEASE_NAME} image
-  - tar -czvf ${DOCKER_RELEASE_NAME} moseq2-docker.tar
+  - mv moseq2-docker.tar ${DOCKER_RELEASE_NAME}
 
 deploy:
   provider: releases

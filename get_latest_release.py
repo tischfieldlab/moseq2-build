@@ -1,4 +1,6 @@
 import getpass, argparse, requests, os
+from tqdm import tqdm
+import tarfile
 
 # local imports
 from utils.commands import executeCommand, panicIfStderr, printSuccessMessage, printErrorMessage
@@ -11,18 +13,10 @@ def main():
     parser.add_argument("-o", "--output", nargs='?', help="Specify output folder for the downloaded images.",
         dest="outputPath", default=os.getcwd(), type=str)
 
-    username = input("Enter GitHub username: ")
-    password = getpass.getpass(prompt="Enter password: ")
-
     args = parser.parse_args()
-    assetsIndices = [0, 1]
+    assetsIndices = determineTargetAsset(args)
 
-    if (args.assetType == 'singularity'):
-        assetsIndices = [1]
-
-    elif (args.assetType == 'docker'):
-        assetsIndices[0]
-
+    username, password = getUnamPword()
     if username == ' ':
         printErrorMessage("Please enter non-empty username.")
         exit(1)
@@ -34,6 +28,37 @@ def main():
     downloadAssets(username, password, assetsIndices, args.outputPath)
     printSuccessMessage("All commands executed\n\n")
 #end main()
+
+def getUnamPword():
+    """ Prompts the user for a username and password
+    for GitHub to use to download the assets.
+
+    :rtype: String username, String password.
+    """
+    username = input("Enter GitHub username: ")
+    password = getpass.getpass(prompt="Enter password: ")
+    return username, password
+#ned getUnamPword()
+
+def determineTargetAsset(args):
+    """ Determines what asset we are going to download
+    based on the passed in string on the command line.
+
+    :type args: argparse args object
+    :param args: List of arguments passed in.
+
+    :rtype: List containing the indices of the releases we wish to
+    download.
+    """
+    assetsIndices = [0, 1]
+    if (args.assetType == 'singularity'):
+        assetsIndices = [1]
+
+    elif (args.assetType == 'docker'):
+        assetsIndices = [0]
+
+    return assetsIndices
+#end determineTargetAsset()
 
 def downloadAssets(uname, pword, indices, outputPath):
     """ Downloads the latest assets from the moseq2-build repository.
@@ -60,7 +85,7 @@ def downloadAssets(uname, pword, indices, outputPath):
         exit(1)
 
     else:
-        printSuccessMessage(msg)
+        printSuccessMessage(msg + '\n\n')
 
     jsonData = x.json()
     for i in indices:
@@ -71,16 +96,33 @@ def downloadAssets(uname, pword, indices, outputPath):
         finalCom = url + "/assets/" + releaseId
         msg = "Downloaded asset " + assetName
 
-        x = requests.get(finalCom, headers=header)
+        x = requests.get(finalCom, headers=header, stream=True)
         if (x.status_code != 200):
             printErrorMessage(msg + '\n')
             exit(1)
-        else:
-            printSuccessMessage(msg)
+
+        totalSize = int(x.headers.get('content-length', 0))
+        blockSize = 1024 # 1KB
+        t = tqdm(total=totalSize, unit='1B', unit_scale=True)
 
         assetOutput = os.path.join(outputPath, assetName)
         with open(assetOutput, 'wb') as f:
-            f.write(x.content)
+            for data in x.iter_content(blockSize):
+                t.update(len(data))
+                f.write(data)
+        t.close()
+
+        tar = tarfile.open(assetOutput)
+        p = os.path.splitext(assetOutput)[0]
+        p = os.path.splitext(p)[0]
+        p = os.path.splitext(p)[0]
+        tar.extractall(path=p)
+        tar.close()
+        print("Finished unzipping\n")
+        os.remove(assetOutput)
+
+    if totalSize != 0 and t.n != totalSize:
+        printErrorMessage(msg + '\n')
 #end downloadAssets()
 
 if __name__ == '__main__':

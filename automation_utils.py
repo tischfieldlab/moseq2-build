@@ -6,13 +6,13 @@ from stat import S_IEXEC
 # local imports
 from utils.commands import executeCommand, panicIfStderr, printSuccessMessage, printErrorMessage
 from utils.mount import mountDirectories
-from utils.constants import DEFAULT_FLIP_PATH, BATCH_TABLE, EXTRACT_TABLE, SINGULARITY_COMS
+from utils.constants import DEFAULT_FLIP_PATH, BATCH_TABLE, EXTRACT_TABLE, SINGULARITY_COMS, DEFAULT_IMAGE, ENVIRONMENT_CONFIG
 
 def main():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(title="moseq2 cli entrypoints.", dest="command")
     subparserList = []
-    
+
     parser_extract = subparsers.add_parser('moseq2-extract')
 
     parser_batch = subparsers.add_parser('moseq2-batch')
@@ -20,11 +20,15 @@ def main():
             help='Location for which the batched command script will be output to.')
 
     for _, subp in subparsers.choices.items():
-        subp.add_argument('-p', '--p', default=None, nargs='?', help='Location of the image file to be used.', dest='imagePath')
+        subp.add_argument('-p', '--p', default=DEFAULT_IMAGE, nargs='?', help='Location of the image file to be used.', dest='imagePath')
         subp.add_argument('--flip-path', default=DEFAULT_FLIP_PATH, dest='flipFilePath', help='Location of the flip classifier file.',
             type=str)
         subp.add_argument('remainder', nargs=argparse.REMAINDER)
         subp.set_defaults(func=entrypoint)
+
+    parser_update = subparsers.add_parser('update-image')
+    parser_update.add_argument('path', default=DEFAULT_IMAGE, help='Path to the image file that will become the new default image.', type=str)
+    parser_update.set_defaults(func=updateDefaultImagePath)
 
     args = parser.parse_args()
     args.func(args)
@@ -158,6 +162,23 @@ def handle_extract(args, command):
     if len(result[0]) != 0:
         print(result[0].decode('utf-8'))
 #end handle_extract()
+
+def updateDefaultImagePath(args):
+    """ Updates the default image path variable in the
+    environment configuartion file.
+
+    :type args: argparse args object
+    :param args: List of passed in arguments.
+    """
+    newPath = args.path
+    with open(ENVIRONMENT_CONFIG, 'r') as f:
+        contents = yaml.safe_load(f)
+    contents['defaultImage'] = newPath
+    with open(ENVIRONMENT_CONFIG, 'w') as f:
+        yaml.dump(contents, f, Dumper=yaml.RoundTripDumper)
+
+    printSuccessMessage("Updated environment file\n\n")
+#end updateDefaultImagePath()
 
 def place_classifier_in_yaml(configPath, flipPath):
     """ Helper function used to place the location of
