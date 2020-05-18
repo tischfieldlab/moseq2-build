@@ -15,6 +15,8 @@ def main():
         dest='downloadImage', type=bool, default=False, nargs='?', const=True)
     parser.add_argument('--no-default', help='Do not override the current default image path.',
         dest="noDefaultChange", type=bool, const=True, default=False, nargs='?')
+    parser.add_argument('-v', '--version', help='Specific version number to download from the releases. Format: v24',
+        dest='versionString', type=str, default=None)
 
     args = parser.parse_args()
 
@@ -24,7 +26,7 @@ def main():
         cleanEnvironmentFolder()
 
     if (args.downloadImage == True):
-        assetsIndices, imageType, paths = determineTargetAssets()
+        assetsIndices, imageType, paths = determineTargetAssets(args.versionString)
         if (args.noDefaultChange == False):
             updateEnvironment(assetsIndices, imageType, paths)
         else:
@@ -36,7 +38,7 @@ def main():
     printSuccessMessage("Exiting now\n\n")
 #end main()
 
-def determineTargetAssets():
+def determineTargetAssets(version):
     image_options = ['0', '1', '2'] # 0 - Docker, 1 - Singularity, 2 - Both
     image_type = '' # Assume both at the start
     while (image_type not in image_options):
@@ -58,7 +60,7 @@ def determineTargetAssets():
     else:
         assetsIndices = [0, 1]
 
-    paths = downloadAssets(username, password, assetsIndices, outputPath)
+    paths = downloadAssets(username, password, assetsIndices, outputPath, version)
 
     return assetsIndices, image_type, paths
 #end determineTargetAssets()

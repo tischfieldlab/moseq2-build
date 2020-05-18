@@ -25,7 +25,7 @@ def main():
         printErrorMessage("Please enter non-empty password.")
         exit(1)
 
-    downloadAssets(username, password, assetsIndices, args.outputPath)
+    downloadAssets(username, password, assetsIndices, args.outputPath, None)
     printSuccessMessage("All commands executed\n\n")
 #end main()
 
@@ -60,7 +60,7 @@ def determineTargetAsset(args):
     return assetsIndices
 #end determineTargetAsset()
 
-def downloadAssets(uname, pword, indices, outputPath):
+def downloadAssets(uname, pword, indices, outputPath, version):
     """ Downloads the latest assets from the moseq2-build repository.
 
     :type uname: String
@@ -74,7 +74,11 @@ def downloadAssets(uname, pword, indices, outputPath):
     Either singularity or docker image, or both.
     """
     url = "https://" + uname + ":" + pword + GITHUB_LINK
-    x = requests.get(url + "/latest")
+    if (version is None):
+        x = requests.get(url + "/latest")
+
+    else:
+        x = requests.get(url + "/" + version)
 
     msg = "Received release info"
 
