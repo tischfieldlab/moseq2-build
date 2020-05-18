@@ -1,0 +1,5 @@
+[console_scripts]
+automation_utils = scripts.automation_utils:main
+environment = scripts.environment:main
+get_latest_release = scripts.get_latest_release:main
+

@@ -20,7 +20,6 @@ setup(
         'tqdm',
         'pytest',
         'importlib',
-        'pkgutil',
     ],
     description='Location of environment images for use during the pipeline',
     packages=setuptools.find_packages(),
