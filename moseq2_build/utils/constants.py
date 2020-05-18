@@ -7,11 +7,11 @@ EXTRACT_TABLE = {'generate-config': ['-o', '--output-file'],
                 'extract': ['--config-file', '--flip-classifier']}
 SINGULARITY_COMS = {'exec': 'singularity exec', 'mount': '-B'}
 ENVIRONMENT_CONFIG = os.path.join(str(Path.home()), ".config", "moseq2_environment", "moseq2_environment.yaml")
+GITHUB_LINK = "@api.github.com/repos/tischfieldlab/moseq2-build/releases"
 
-# Get the default image path from the config file and use it here
-with open(ENVIRONMENT_CONFIG, 'r') as f:
-    contents = yaml.safe_load(f)
-if contents is not None:
-    DEFAULT_IMAGE = contents["defaultImage"]
-else:
-    DEFAULT_IMAGE = None
+def getDefaultImage():
+    with open(ENVIRONMENT_CONFIG, "r") as f:
+        contents = yaml.safe_load(f)
+    defaultImage = contents['defaultImage']
+    return defaultImage
+#end getDefaultImage()

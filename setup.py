@@ -29,8 +29,7 @@ setup(
 )
 
 # NOTE: Need to leave this here after we run the setup so that imports work correctly
-from moseq2_build.utils.setup_utils import determineTargetAssetsAndUpdateEnvironment
+from moseq2_build.scripts.environment import determineTargetAssets, updateEnvironment
 
-# This will ask the user for which image(s) to download and
-# update the global configuration file
-determineTargetAssetsAndUpdateEnvironment()
+assetsIndices, imageType, paths = determineTargetAssets()
+updateEnvironment(assetsIndices, imageType, paths)

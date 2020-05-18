@@ -1,15 +1,15 @@
-import getpass, argparse, requests, os
+import getpass, argparse, requests, os, shutil
 from tqdm import tqdm
 import tarfile
 
 # local imports
 from moseq2_build.utils.commands import executeCommand, panicIfStderr, printSuccessMessage, printErrorMessage
-
-GITHUB_LINK = "@api.github.com/repos/tischfieldlab/moseq2-build/releases"
+from moseq2_build.utils.constants import ENVIRONMENT_CONFIG, GITHUB_LINK
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("assetType", nargs="?", help="Specify either singularity or docker asset to download from the latest release.")
+    parser.add_argument("-t", "--type", nargs="?", help="Specify either singularity or docker asset to download from the latest release.",
+        dest="assetType", default=None, type=str)
     parser.add_argument("-o", "--output", nargs='?', help="Specify output folder for the downloaded images.",
         dest="outputPath", default=os.getcwd(), type=str)
 
@@ -105,6 +105,8 @@ def downloadAssets(uname, pword, indices, outputPath):
         blockSize = 1024 # 1KB
         t = tqdm(total=totalSize, unit='1B', unit_scale=True)
 
+        result = []
+
         assetOutput = os.path.join(outputPath, assetName)
         with open(assetOutput, 'wb') as f:
             for data in x.iter_content(blockSize):
@@ -115,14 +117,18 @@ def downloadAssets(uname, pword, indices, outputPath):
         tar = tarfile.open(assetOutput)
         p = os.path.splitext(assetOutput)[0]
         p = os.path.splitext(p)[0]
-        p = os.path.splitext(p)[0]
+        # p = os.path.splitext(p)[0]
         tar.extractall(path=p)
         tar.close()
         print("Finished unzipping\n")
         os.remove(assetOutput)
 
+        result.append(os.path.join(outputPath, p))
+
     if totalSize != 0 and t.n != totalSize:
         printErrorMessage(msg + '\n')
+
+    return result
 #end downloadAssets()
 
 if __name__ == '__main__':
