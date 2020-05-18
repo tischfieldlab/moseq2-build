@@ -12,6 +12,8 @@ def main():
         dest="assetType", default=None, type=str)
     parser.add_argument("-o", "--output", nargs='?', help="Specify output folder for the downloaded images.",
         dest="outputPath", default=os.getcwd(), type=str)
+    parser.add_argument('-v', '--version', help="Specify a release version to download.",
+        dest="versionString", default=None, type=str)
 
     args = parser.parse_args()
     assetsIndices = determineTargetAsset(args)
@@ -25,7 +27,7 @@ def main():
         printErrorMessage("Please enter non-empty password.")
         exit(1)
 
-    downloadAssets(username, password, assetsIndices, args.outputPath, None)
+    downloadAssets(username, password, assetsIndices, args.outputPath, args.versionString)
     printSuccessMessage("All commands executed\n\n")
 #end main()
 
@@ -78,7 +80,7 @@ def downloadAssets(uname, pword, indices, outputPath, version):
         x = requests.get(url + "/latest")
 
     else:
-        x = requests.get(url + "/" + version)
+        x = requests.get(url + "/tags/" + version)
 
     msg = "Received release info"
 
