@@ -12,7 +12,7 @@ for s in script_dir.glob('*.py'):
 
 setup(
     name='moseq2-build',
-    version='0.0.1',
+    version='0.1.0',
     license='MIT License',
     install_requires=[
         'ruamel.yaml',
