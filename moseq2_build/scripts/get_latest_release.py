@@ -3,7 +3,7 @@ from tqdm import tqdm
 import tarfile
 
 # local imports
-from utils.commands import executeCommand, panicIfStderr, printSuccessMessage, printErrorMessage
+from moseq2_build.utils.commands import executeCommand, panicIfStderr, printSuccessMessage, printErrorMessage
 
 GITHUB_LINK = "@api.github.com/repos/tischfieldlab/moseq2-build/releases"
 

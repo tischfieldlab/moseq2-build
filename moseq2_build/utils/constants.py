@@ -11,4 +11,7 @@ ENVIRONMENT_CONFIG = os.path.join(str(Path.home()), ".config", "moseq2_environme
 # Get the default image path from the config file and use it here
 with open(ENVIRONMENT_CONFIG, 'r') as f:
     contents = yaml.safe_load(f)
-DEFAULT_IMAGE = contents["defaultImage"]
+if contents is not None:
+    DEFAULT_IMAGE = contents["defaultImage"]
+else:
+    DEFAULT_IMAGE = None

@@ -4,9 +4,9 @@ from termcolor import colored
 from stat import S_IEXEC
 
 # local imports
-from utils.commands import executeCommand, panicIfStderr, printSuccessMessage, printErrorMessage
-from utils.mount import mountDirectories
-from utils.constants import DEFAULT_FLIP_PATH, BATCH_TABLE, EXTRACT_TABLE, SINGULARITY_COMS, DEFAULT_IMAGE, ENVIRONMENT_CONFIG
+from moseq2_build.utils.commands import executeCommand, panicIfStderr, printSuccessMessage, printErrorMessage
+from moseq2_build.utils.mount import mountDirectories
+from moseq2_build.utils.constants import DEFAULT_FLIP_PATH, BATCH_TABLE, EXTRACT_TABLE, SINGULARITY_COMS, DEFAULT_IMAGE, ENVIRONMENT_CONFIG
 
 def main():
     parser = argparse.ArgumentParser()
