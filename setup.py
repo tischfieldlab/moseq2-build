@@ -31,5 +31,8 @@ setup(
 # NOTE: Need to leave this here after we run the setup so that imports work correctly
 from moseq2_build.scripts.environment import determineTargetAssets, updateEnvironment
 
+# This asks for user input for which image to download
+# and then which image to make the default image for
+# the environment itself
 assetsIndices, imageType, paths = determineTargetAssets()
 updateEnvironment(assetsIndices, imageType, paths)
