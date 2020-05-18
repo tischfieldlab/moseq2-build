@@ -39,6 +39,12 @@ def main():
 #end main()
 
 def determineTargetAssets(version):
+    """ Prompts for user input for which asset image
+    to download.
+    :type version: String
+    :param version: String representing the specific version
+    of the images to download.
+    """
     image_options = ['0', '1', '2'] # 0 - Docker, 1 - Singularity, 2 - Both
     image_type = '' # Assume both at the start
     while (image_type not in image_options):
@@ -66,6 +72,18 @@ def determineTargetAssets(version):
 #end determineTargetAssets()
 
 def updateEnvironment(assetsIndices, image_type, paths):
+    """ Updates the environment config file field pertaining to what
+    the default image file will be.
+
+    :type assetsIndices: Array of strings
+    :param assetsIndices: This array contains the index of the asset we wish
+    to download. The index is used to index into the array we download
+    from the GitHub releases page.
+
+    :type paths: Array of Strings
+    :param paths: Contains the paths to the location of the downloaded asset
+    in the environment folder.
+    """
     use_image = ''
     outputPath = os.path.join(str(Path.home()), ".config", "moseq2_environment")
     # We need to determine which one to make default as the user asked for both
@@ -95,11 +113,15 @@ def updateEnvironment(assetsIndices, image_type, paths):
         singFile = [fi for fi in os.listdir(singPath) if os.path.isfile(os.path.join(singPath, fi))][0]
         singPath = os.path.join(singPath, singFile)
         d = {'defaultImage': str(os.path.join(outputPath, singPath))}
+        flipPaths = {'flipPaths': ['']}
         yaml.dump(d, f, Dumper=yaml.RoundTripDumper)
     printSuccessMessage("Updated environment file\n\n")
 #end updateEnvironment()
 
 def updateDefaultImage(args):
+    """ Updates the default image to be the specified
+    path passed in.
+    """
     newPath = os.path.abspath(args.updatePath)
     with open(ENVIRONMENT_CONFIG, 'r') as f:
         contents = yaml.safe_load(f)
@@ -111,6 +133,10 @@ def updateDefaultImage(args):
 #end updateDefaultImage()
 
 def cleanEnvironmentFolder():
+    """ Removes the contents of the environment
+    configuration folder, including all directories
+    and sub-directories.
+    """
     folder = os.path.dirname(ENVIRONMENT_CONFIG)
     for filename in os.listdir(folder):
         fpath = os.path.join(folder, filename)

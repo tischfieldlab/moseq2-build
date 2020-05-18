@@ -1,7 +1,11 @@
 from pathlib import Path
 import os, ruamel.yaml as yaml
 
-DEFAULT_FLIP_PATH = '/moseq2_data/flip_files/flip_classifier_k2_c57_10to13weeks.pkl'
+FIBER_FLIP_PATH = '/moseq2_data/flip_files/flip_classifier_k2_largemicewithfiber.pkl'
+INSCOPIX_FLIP_PATH = '/moseq2_data/flip_files/flip_classifier_k2_inscopix.pkl'
+C57_FLIP_PATH = '/moseq2_data/flip_files/flip_classifier_k2_c57_10to13weeks.pkl'
+DEFAULT_FLIP_PATH = C57_FLIP_PATH
+
 BATCH_TABLE = {'extract-batch': ['--input-dir', '-i', '--config-file', '-c', '--filename']}
 EXTRACT_TABLE = {'generate-config': ['-o', '--output-file'],
                 'extract': ['--config-file', '--flip-classifier']}
