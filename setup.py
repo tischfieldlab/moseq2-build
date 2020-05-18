@@ -34,5 +34,5 @@ from moseq2_build.scripts.environment import determineTargetAssets, updateEnviro
 # This asks for user input for which image to download
 # and then which image to make the default image for
 # the environment itself
-assetsIndices, imageType, paths = determineTargetAssets()
+assetsIndices, imageType, paths = determineTargetAssets(None) # Pass in None here because we want the latest release version
 updateEnvironment(assetsIndices, imageType, paths)

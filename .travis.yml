@@ -43,7 +43,8 @@ script:
   - cd ..
   # Bulid docker file
   - mkdir /tmp/image
-  - docker build -t moseq2 --build-arg SERVICE_TOKEN=${SERVICE_ACCOUNT_TOKEN} --build-arg GIT_NAME=${GIT_ACCOUNT} .
+  - docker build -t moseq2 --build-arg SERVICE_TOKEN=${SERVICE_ACCOUNT_TOKEN} --build-arg GIT_NAME=${GIT_ACCOUNT} . -o .
+  - ls
   # Convert docker image to singularity image https://github.com/singularityhub/docker2singularity/blob/master/README.md
   - docker run -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/image:/output --privileged -t --rm quay.io/singularity/docker2singularity moseq2
   - docker image save moseq2 > moseq2-docker.tar
