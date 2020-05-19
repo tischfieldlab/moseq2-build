@@ -82,7 +82,7 @@ def handle_batch(args, command):
     mountCommand = mountDirectories(args, command["mount"], BATCH_TABLE)
 
     configFile = ''
-    if ('-c' not in args.remainder and '--config-file' not in args.remainder and not os.path.isfile('config.yaml')):
+    if ('-c' not in args.remainder and '--config-file' not in args.remainder):
         print(colored("No config file was passed in... generating one now.\n", 'yellow'))
         bashCommand = " bash -c 'source activate moseq2; moseq2-extract generate-config;'"
         configCommand = command["exec"] + ' ' + mountCommand + ' ' + args.imagePath + bashCommand
