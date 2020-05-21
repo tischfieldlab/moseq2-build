@@ -54,7 +54,8 @@ def entrypoint(args):
     # Since Docker doesn't have an extension, we need to figure
     # out if this is a docker file...
     else:
-        print("urggg.")
+        print("Docker is not supported at the moment.")
+        exit(0)
 
     if (args.command == 'moseq2-batch'):
         handle_batch(args, fileCommands)
