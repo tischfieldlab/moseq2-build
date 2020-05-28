@@ -6,31 +6,6 @@ import tarfile
 from moseq2_build.utils.commands import executeCommand, panicIfStderr, printSuccessMessage, printErrorMessage
 from moseq2_build.utils.constants import ENVIRONMENT_CONFIG, GITHUB_LINK
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-t", "--type", nargs="?", help="Specify either singularity or docker asset to download from the latest release.",
-        dest="assetType", default=None, type=str)
-    parser.add_argument("-o", "--output", nargs='?', help="Specify output folder for the downloaded images.",
-        dest="outputPath", default=os.getcwd(), type=str)
-    parser.add_argument('-v', '--version', help="Specify a release version to download.",
-        dest="versionString", default=None, type=str)
-
-    args = parser.parse_args()
-    assetsIndices = determineTargetAsset(args)
-
-    username, password = getUnamPword()
-    if username == ' ':
-        printErrorMessage("Please enter non-empty username.")
-        exit(1)
-
-    if password == ' ':
-        printErrorMessage("Please enter non-empty password.")
-        exit(1)
-
-    downloadAssets(username, password, assetsIndices, args.outputPath, args.versionString)
-    printSuccessMessage("All commands executed\n\n")
-#end main()
-
 def getUnamPword():
     """ Prompts the user for a username and password
     for GitHub to use to download the assets.
@@ -41,26 +16,6 @@ def getUnamPword():
     password = getpass.getpass(prompt="Enter password: ")
     return username, password
 #ned getUnamPword()
-
-def determineTargetAsset(args):
-    """ Determines what asset we are going to download
-    based on the passed in string on the command line.
-
-    :type args: argparse args object
-    :param args: List of arguments passed in.
-
-    :rtype: List containing the indices of the releases we wish to
-    download.
-    """
-    assetsIndices = [0, 1]
-    if (args.assetType == 'singularity'):
-        assetsIndices = [1]
-
-    elif (args.assetType == 'docker'):
-        assetsIndices = [0]
-
-    return assetsIndices
-#end determineTargetAsset()
 
 def downloadAssets(uname, pword, indices, outputPath, version):
     """ Downloads the latest assets from the moseq2-build repository.
@@ -84,7 +39,7 @@ def downloadAssets(uname, pword, indices, outputPath, version):
 
     msg = "Received release info"
 
-    print("\nGetting latest release info")
+    print("\nGetting release info")
 
     if x.status_code != 200:
         printErrorMessage(msg + '\n')
@@ -136,6 +91,3 @@ def downloadAssets(uname, pword, indices, outputPath, version):
 
     return result
 #end downloadAssets()
-
-if __name__ == '__main__':
-    main()
