@@ -8,7 +8,6 @@ on:
     branches: [ master ]
 
 env:
-  GIT_ACCOUNT: tischlab-travis-ci
 
 jobs:
   build:
@@ -55,7 +54,7 @@ jobs:
     - name: Build moseq2 Docker File
       run: |
         mkdir /tmp/image
-        docker build -t moseq2 --build-arg SERVICE_TOKEN=${SERVICE_ACCOUNT_TOKEN} --build-arg GIT_NAME=${{ env.GIT_ACCOUNT }} ./moseq2-build/
+        docker build -t moseq2 --build-arg SERVICE_TOKEN=${{ secrets.SERVICE_ACCOUNT_TOKEN }} --build-arg GIT_NAME=${{ secrets.SERVICE_ACCOUNT }} ./moseq2-build/
         ls
 
     - name: Convert Docker Image to Singularity Image
