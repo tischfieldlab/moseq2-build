@@ -21,6 +21,7 @@ RUN source ~/.bashrc \
     && conda create -n moseq2 python=3.6 -y \
     && conda install -c conda-forge ffmpeg \
     && conda activate moseq2 \
+    && pip install requests \
     && pip install git+https://github.com/tischfieldlab/pyhsmm.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extract.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-pca.git \
