@@ -19,8 +19,11 @@ ARG SERVICE_TOKEN
 RUN source ~/.bashrc \
     && conda update -n base -c defaults conda \
     && conda create -n moseq2 python=3.6 -y \
-    && conda install -c conda-forge ffmpeg \
     && conda activate moseq2 \
+    && conda install -c conda-forge ffmpeg \
+    && pip install requests future cython \
+    && pip install git+https://github.com/tischfieldlab/pyhsmm.git \
+    && pip install git+https://github.com/tischfieldlab/pyhsmm-autoregressive.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extract.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-pca.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-model.git \

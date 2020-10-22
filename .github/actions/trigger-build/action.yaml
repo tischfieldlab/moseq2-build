@@ -1,0 +1,25 @@
+name: 'Trigger Moseq Container Build'
+description: 'Triggers a build of the Moseq Container'
+inputs:
+  token:
+    description: 'GitHub access token'
+    required: true
+    default: ${{ secrets.GITHUB_TOKEN }}
+  triggerer:
+    description: 'Who or what invoked this action'
+    required: true
+    default: ${{ github.repository }}
+  reason:
+    description: 'Reason for invoking'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Launch build task test
+      shell: bash
+      run: |
+        curl -X POST https://api.github.com/repos/tischfieldlab/moseq2-build/dispatches \
+          -H "Accept: application/vnd.github.everest-preview+json" \
+          -H "Authorization: token ${{ inputs.token }}" \
+          --data '{"triggerer": "${{ inputs.token }}", "reason": "${{ inputs.reason }}"}'
+
