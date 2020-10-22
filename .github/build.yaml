@@ -1,0 +1,54 @@
+name: Build Moseq2 Container
+
+on:
+  repository_dispatch:
+  push:
+    #branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  GIT_ACCOUNT: tischlab-travis-ci
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '^1.13.1'
+
+    - name: Checkout moseq2-build
+      uses: actions/checkout@v2
+      with:
+        path: moseq2-build
+        fetch-depth: 0
+
+    - name: Checkout Singularity
+      uses: actions/checkout@v2
+      with:
+        repository: sylabs/singularity
+        ref: v3.5.0
+        path: singularity
+        fetch-depth: 1
+
+    - name: Build Singularity
+      run: |
+        cd singularity
+        ./mconfig
+        make -C ./builddir
+        sudo make -C ./builddir install
+        cd ..
+
+    - name: Build moseq2 Docker File
+      run: |
+        mkdir /tmp/image
+        docker build -t moseq2 --build-arg SERVICE_TOKEN=${SERVICE_ACCOUNT_TOKEN} --build-arg GIT_NAME=${{ env.GIT_ACCOUNT }} .
+        ls
+
+    - name: Convert Docker Image to Singularity Image
+      run: |
+        docker run -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/image:/output --privileged -t --rm quay.io/singularity/docker2singularity moseq2
+        docker image save moseq2 > moseq2-docker.tar
+        ls /tmp/image
