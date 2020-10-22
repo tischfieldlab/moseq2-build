@@ -21,7 +21,7 @@ RUN source ~/.bashrc \
     && conda create -n moseq2 python=3.6 -y \
     && conda install -c conda-forge ffmpeg \
     && conda activate moseq2 \
-    && pip install requests \
+    && pip install requests future \
     && pip install git+https://github.com/tischfieldlab/pyhsmm.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extract.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-pca.git \
@@ -29,7 +29,7 @@ RUN source ~/.bashrc \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-batch.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-viz.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git \
-    && pip install git+https://github.com/tischfieldlab/pyhsmm-autoregressive.git \
+    && pip install git+https://github.com/tischfieldlab/pyhsmm-autoregressive.git
 
 # Run tests to make sure all repos work
 RUN source activate moseq2 \
