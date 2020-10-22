@@ -8,8 +8,13 @@ SHELL ["/bin/bash", "-c"]
 
 # Install dependencies
 RUN apt-get update --fix-missing -y \
-    && apt-get install build-essential \
-    libxrender-dev libsm6 libglib2.0-0 vim-gtk3 -y
+    && apt-get install -y \
+        build-essential \
+        libxrender-dev \
+        libsm6 \
+        libglib2.0-0 \
+        vim-gtk3 \
+        libgl1-mesa-dev
 
 # Arguments for cloning down the repos and installing them to the conda environment
 ARG GIT_NAME
@@ -21,7 +26,7 @@ RUN source ~/.bashrc \
     && conda create -n moseq2 python=3.6 -y \
     && conda activate moseq2 \
     && conda install -c conda-forge ffmpeg \
-    && pip install requests future cython \
+    && pip install requests future cython "pytest>=3.6" pytest-cov codecov \
     && pip install git+https://github.com/tischfieldlab/pyhsmm.git \
     && pip install git+https://github.com/tischfieldlab/pyhsmm-autoregressive.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extract.git \
@@ -29,14 +34,14 @@ RUN source ~/.bashrc \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-model.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-batch.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-viz.git \
-    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git
+    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git \
+    # NOTE: THIS IS A HACK!!! LATEST VERSION OF SCIKIT DOES NOT WORK
+    && pip install scikit-image==0.16.2 \
 
 # Run tests to make sure all repos work
 RUN source activate moseq2 \
     && git clone https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git \
-    && pip install "pytest>=3.6" pytest-cov codecov \
-    # NOTE: THIS IS A HACK!!! LATEST VERSION OF SCIKIT DOES NOT WORK
-    && pip install scikit-image==0.16.2 \ 
+
     && pytest moseq2-extras/tests/test_entry_points.py \
     && rm -rf moseq2-extras \
     && mkdir /moseq2_data \
