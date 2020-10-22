@@ -32,12 +32,16 @@ RUN source ~/.bashrc \
 RUN source activate moseq2 \
     && git clone https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git \
     && pip install "pytest>=3.6" pytest-cov codecov \
+    # NOTE: THIS IS A HACK!!! LATEST VERSION OF SCIKIT DOES NOT WORK
+    && pip install scikit-image==0.16.2 \ 
     && pytest moseq2-extras/tests/test_entry_points.py \
     && rm -rf moseq2-extras \
     && mkdir /moseq2_data \
     && mkdir /moseq2_data/flip_files \
     # Download the flip classifier to a known directory
-    && moseq2-extract download-flip-file --output-dir /moseq2_data/flip_files <<< "1"
+    && moseq2-extract download-flip-file --output-dir /moseq2_data/flip_files <<< "0" \
+    && moseq2-extract download-flip-file --output-dir /moseq2_data/flip_files <<< "1" \
+    && moseq2-extract download-flip-file --output-dir /moseq2_data/flip_files <<< "2"
 
 # Add env activation in bashrc file
 RUN echo 'source actiavte moseq2' >> ~/.bashrc

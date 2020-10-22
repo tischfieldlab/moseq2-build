@@ -1,29 +1,37 @@
-from distutils.core import setup
-import setuptools
-import os
-from pathlib import Path
+from setuptools import setup, find_packages
+import subprocess, sys
 
-
-scripts = []
-script_dir = Path(__file__).resolve().parent.joinpath('scripts')
-for s in script_dir.glob('*.py'):
-    if s.name != '__init__.py':
-        ep = s.name.replace('.py', '')
-        scripts.append('{} = scripts.{}:main'.format(ep,ep))
+def install(package):
+    subprocess.call([sys.executable, "-m", "pip", "install", package])
+#end install()
 
 setup(
     name='moseq2-build',
-    version='0.0.1',
+    author='Tischfield Lab',
+    version='0.1.0',
     license='MIT License',
     install_requires=[
         'ruamel.yaml',
         'termcolor',
+        'tqdm',
+        'pytest',
+        'importlib',
+        'click',
     ],
+    python_requires='>=3.6',
     description='Location of environment images for use during the pipeline',
-    packages=setuptools.find_packages(),
+    packages=find_packages(),
     include_package_data=True,
     entry_points={
-        'console_scripts': scripts,
+        'console_scripts': ['moseq2-env = moseq2_build.cli:cli'],
     },
-    zip_safe=False
 )
+
+# NOTE: Need to leave this here after we run the setup so that imports work correctly
+from moseq2_build.env.env import determineTargetAssets, updateEnvironment
+
+# This asks for user input for which image to download
+# and then which image to make the default image for
+# the environment itself
+assetsIndices, imageType, paths = determineTargetAssets(None) # Pass in None here because we want the latest release version
+updateEnvironment(assetsIndices, imageType, paths)
