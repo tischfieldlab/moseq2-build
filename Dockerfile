@@ -23,13 +23,13 @@ RUN source ~/.bashrc \
     && conda activate moseq2 \
     && pip install requests future \
     && pip install git+https://github.com/tischfieldlab/pyhsmm.git \
+    && pip install git+https://github.com/tischfieldlab/pyhsmm-autoregressive.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extract.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-pca.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-model.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-batch.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-viz.git \
-    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git \
-    && pip install git+https://github.com/tischfieldlab/pyhsmm-autoregressive.git
+    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git
 
 # Run tests to make sure all repos work
 RUN source activate moseq2 \
