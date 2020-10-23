@@ -37,8 +37,8 @@ jobs:
       id: getversion
       run: |
         baseversion=$(grep -oP "version='\K([\.\d]+)" ./moseq2-build/setup.py)
-        fullversion="v${ version }.${{ github.run_number }}"
-        echo ${fullversion} > ./version.txt
+        fullversion="v${ baseversion }.${{ github.run_number }}"
+        echo ${ fullversion } > ./version.txt
         echo "::set-output name=version::$(cat ./version.txt)"
         cat ./version.txt
 
