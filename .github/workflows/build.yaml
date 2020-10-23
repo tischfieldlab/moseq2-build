@@ -97,8 +97,14 @@ jobs:
     - name: Upload Singularity Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: Docker
+        name: Singularity
         path: ${{ steps.bundle.outputs.SINGUL_RELEASE }}
+
+    - name: Upload Version Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: Version
+        path: ./version.txt
 
   release:
     needs: build
@@ -107,6 +113,12 @@ jobs:
     steps:
     - name: Download Artifacts
       uses: actions/download-artifact@v2
+
+    - name: Read VERSION file
+      id: getversion
+      run: |
+        echo "::set-output name=version::$(cat ./Version/version.txt)"
+        cat ./Version/version.txt
 
     - name: Create Release
       id: create_release
