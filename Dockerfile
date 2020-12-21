@@ -26,19 +26,20 @@ RUN source ~/.bashrc \
     && conda create -n moseq2 python=3.6 -y \
     && conda activate moseq2 \
     && conda install -c conda-forge ffmpeg \
+    && conda install --yes -c conda-forge scikit-image \
     # NOTE: THIS IS A HACK!!! LATEST VERSION OF SCIKIT DOES NOT WORK
-    && pip install requests future cython "pytest>=3.6" pytest-cov codecov scikit-image==0.16.2 \
+    && pip install requests future cython "pytest>=3.6" pytest-cov codecov \
     && pip install git+https://github.com/tischfieldlab/pyhsmm.git \
     && pip install git+https://github.com/tischfieldlab/pyhsmm-autoregressive.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extract.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-pca.git \
     # NOTE: Forward install all the pre-reqs for moseq2-model so that we don't rely on broken URL paths in the setup.py file
-    && pip install future h5py click numpy pyhsmm "joblib==0.13.1" hdf5storage "ruamel.yaml>=0.15.0" tqdm \
+    && pip install future h5py click numpy "joblib==0.13.1" hdf5storage "ruamel.yaml>=0.15.0" tqdm \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-model.git --no-deps \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-batch.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-viz.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git
-    
+
 
 # Run tests to make sure all repos work
 RUN source activate moseq2 \
@@ -47,10 +48,8 @@ RUN source activate moseq2 \
     && rm -rf moseq2-extras \
     && mkdir /moseq2_data \
     && mkdir /moseq2_data/flip_files \
-    # Download the flip classifier to a known directory
-    && moseq2-extract download-flip-file --output-dir /moseq2_data/flip_files <<< "0" \
-    && moseq2-extract download-flip-file --output-dir /moseq2_data/flip_files <<< "1" \
-    && moseq2-extract download-flip-file --output-dir /moseq2_data/flip_files <<< "2"
+    # Copy the flip classifier to a known directory
+    && cp moseq2-extras/flip_classifiers/* /moseq2_data/flip_files
 
 # Add env activation in bashrc file
 RUN echo 'source actiavte moseq2' >> ~/.bashrc

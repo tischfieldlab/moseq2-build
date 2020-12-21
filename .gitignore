@@ -3,3 +3,6 @@ test_data/
 __pycache__/
 *.pyc
 .idea/
+moseq2_build.egg-info
+build
+dist
