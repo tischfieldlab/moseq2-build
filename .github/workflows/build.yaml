@@ -3,7 +3,7 @@ name: Build Moseq2 Container
 on:
   repository_dispatch:
   push:
-    #branches: [ master ]
+    #branches: [ master ] TODO: UNCOMMENT THIS
   pull_request:
     branches: [ master ]
 
@@ -88,18 +88,21 @@ jobs:
         tar -xf moseq2-docker.tar -C ./image
         tar -czvf ${DOCKER_RELEASE} ./image
 
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     - name: Upload Docker Artifact
       uses: actions/upload-artifact@v2
       with:
         name: Docker
         path: ${{ steps.bundle.outputs.DOCKER_RELEASE }}
 
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     - name: Upload Singularity Artifact
       uses: actions/upload-artifact@v2
       with:
         name: Singularity
         path: ${{ steps.bundle.outputs.SINGUL_RELEASE }}
 
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     - name: Upload Version Artifact
       uses: actions/upload-artifact@v2
       with:
@@ -109,7 +112,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    #if: ########### only on RELEASE ###############
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     steps:
     - name: Download Artifacts
       uses: actions/download-artifact@v2
