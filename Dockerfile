@@ -34,8 +34,6 @@ RUN source ~/.bashrc \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-pca.git \
     # NOTE: Forward install all the pre-reqs for moseq2-model so that we don't rely on broken URL paths in the setup.py file
     && pip install future h5py click numpy pyhsmm "joblib==0.13.1" hdf5storage "ruamel.yaml>=0.15.0" tqdm \
-    && pip install git+https://github.com/mattjj/pybasicbayes.git \
-    && pip install git+https://github.com/mattjj/pyhsmm-autoregressive.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-model.git --no-deps \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-batch.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-viz.git \
