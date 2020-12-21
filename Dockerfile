@@ -28,8 +28,8 @@ RUN source ~/.bashrc \
     && conda install -c conda-forge ffmpeg \
     # NOTE: THIS IS A HACK!!! LATEST VERSION OF SCIKIT DOES NOT WORK
     && pip install requests future cython "pytest>=3.6" pytest-cov codecov scikit-image==0.16.2 \
-    && pip install git+https://github.com/tischfieldlab/pyhsmm.git \
-    && pip install git+https://github.com/tischfieldlab/pyhsmm-autoregressive.git \
+#    && pip install git+https://github.com/tischfieldlab/pyhsmm.git \
+#    && pip install git+https://github.com/tischfieldlab/pyhsmm-autoregressive.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extract.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-pca.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-model.git \
