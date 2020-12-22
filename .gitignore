@@ -6,3 +6,4 @@ __pycache__/
 moseq2_build.egg-info
 build
 dist
+.DS_STORE

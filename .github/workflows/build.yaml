@@ -88,22 +88,22 @@ jobs:
         tar -xf moseq2-docker.tar -C ./image
         tar -czvf ${DOCKER_RELEASE} ./image
 
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     - name: Upload Docker Artifact
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       uses: actions/upload-artifact@v2
       with:
         name: Docker
         path: ${{ steps.bundle.outputs.DOCKER_RELEASE }}
 
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     - name: Upload Singularity Artifact
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       uses: actions/upload-artifact@v2
       with:
         name: Singularity
         path: ${{ steps.bundle.outputs.SINGUL_RELEASE }}
 
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     - name: Upload Version Artifact
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       uses: actions/upload-artifact@v2
       with:
         name: Version
