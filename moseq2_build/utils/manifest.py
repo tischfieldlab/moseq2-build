@@ -82,6 +82,8 @@ def delete_from_manifest(key):
     new_contents = []
     target = []
     for row in contents:
+        if len(row) == 0:
+            continue
         if key != row[0]:
             new_contents.append(row)
         else:
@@ -93,6 +95,7 @@ def delete_from_manifest(key):
 
     # Write out the new tsv file
     with open(man_path, 'w') as tsv_file:
+        new_contents = [x for x in new_contents if x != []]
         writer = csv.writer(tsv_file, delimiter='\t')
 
         writer.writerows(new_contents)
@@ -110,10 +113,11 @@ def put_in_manifest(key, active=False):
     if is_in_manifest(key) is False:
         entry = [key, active]
         with open(man_path, 'a') as tsv_file:
-            writer = csv.writer(tsv_file, delimiter='\t')
-            writer.writerow(entry)
+            if entry != []:
+                writer = csv.writer(tsv_file, delimiter='\t')
+                writer.writerow(entry)
 
-        sys.stderr.write('{} has successfully been added to the manifest.\n'.format(entry))
+            sys.stderr.write('{} has successfully been added to the manifest.\n'.format(entry))
 
         # Set the entry to active and remove active from all other entries
         if active is True:
@@ -141,6 +145,8 @@ def set_active_row(key):
     # Update the row if the key exists
     target = []
     for row in contents:
+        if len(row) == 0:
+            continue
         if key == row[0]:
             row[1] = True
             target = row
@@ -153,6 +159,7 @@ def set_active_row(key):
 
     # Write out the file
     with open(man_path, 'w') as tsv_file:
+        contents = [x for x in contents if x != []]
         writer = csv.writer(tsv_file, delimiter='\t')
         writer.writerows(contents)
         sys.stderr.write('"{}" has been updated in the manifest file.\n'.format(target))

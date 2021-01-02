@@ -1,5 +1,6 @@
 import argparse
 import tabulate
+import shutil
 
 from moseq2_build.utils.manifest import *
 
@@ -8,7 +9,7 @@ def main():
     subparsers = parser.add_subparsers()
 
     env_parser = subparsers.add_parser('env', help='Contains all of the environment operations for the moseq2'
-                                                   'environment')
+                                                   ' environment')
     env_subparsers = env_parser.add_subparsers()
 
     # Create environment parser
@@ -29,9 +30,17 @@ def main():
     list_env_parser.set_defaults(function=list_env_func)
 
     # Activate environment parser
-    activate_env_parser = env_subparsers.add_parser('activate')
+    activate_env_parser = env_subparsers.add_parser('activate-env')
     activate_env_parser.add_argument('-n', '--name', type=str, default=None, required=True, help='Name of the environment to be active.')
     activate_env_parser.set_defaults(function=activate_env_func)
+
+    # Activate image parser
+    activate_image_parser = env_subparsers.add_parser('activate-image')
+    activate_image_parser.add_argument('-n', '--name', type=str, default=None, required=True,
+        help='The name of the environment to activate the image of.')
+    activate_image_parser.add_argument('-i', '--image', type=str, default=None,
+        choices=['Singularity', 'Docker'], required=True, help='The image to be set to active.')
+    activate_image_parser.set_defaults(function=activate_image_func)
 
     args = parser.parse_args()
     args.function(args)
@@ -50,7 +59,8 @@ def create_env_func(args):
 
     # Create the environment file if we successfully put in the entry
     if res is True:
-        f_path = os.path.join(get_environment_path(), args.name + '.yml')
+        os.mkdir(os.path.join(get_environment_path(), args.name))
+        f_path = os.path.join(get_environment_path(), args.name, args.name + '.yml')
         open(f_path, 'w').close()
         sys.stderr.write('Environment config created at {}.\n'.format(f_path))
 #end create_env_func()
@@ -67,9 +77,8 @@ def delete_env_func(args):
     res = delete_from_manifest(args.name)
 
     # If we deleted successfully, remove the file from disk
-    f_path = os.path.join(get_environment_path(), args.name + '.yml')
     if res is True:
-        os.remove(f_path)
+        shutil.rmtree(os.path.join(get_environment_path(), args.name))
         sys.stderr.write('The "{}" environment has successfully been removed.\n'.format(args.name))
 #end delete_env_func()
 
@@ -101,6 +110,10 @@ def activate_env_func(args):
     assert (args.name is not None)
     set_active_row(args.name)
 #end activate_env_func()
+
+def activate_image_func(args):
+    assert (args.name is not None)
+    assert (args.image is not None)
 
 if __name__ == '__main__':
     main()
