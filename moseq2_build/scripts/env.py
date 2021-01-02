@@ -3,6 +3,8 @@ import tabulate
 import shutil
 
 from moseq2_build.utils.manifest import *
+from moseq2_build.utils.image import *
+from moseq2_build.utils.constants import get_image_paths
 
 def main():
     parser = argparse.ArgumentParser()
@@ -13,14 +15,14 @@ def main():
     env_subparsers = env_parser.add_subparsers()
 
     # Create environment parser
-    create_env_parser = env_subparsers.add_parser('create')
+    create_env_parser = env_subparsers.add_parser('create-env')
     create_env_parser.add_argument('-n', '--name', type=str, help='The name of the environment that is to be created.',
                                    default=None, required=True)
     create_env_parser.add_argument('--set-active', action='store_true', help='Set the new environment to be the active one.')
     create_env_parser.set_defaults(function=create_env_func)
 
     # Delete environment parser
-    delete_env_parser = env_subparsers.add_parser('delete')
+    delete_env_parser = env_subparsers.add_parser('delete-env')
     delete_env_parser.add_argument('-n', '--name', type=str, default=None, required=True, help='Name of the environment to delete.')
     delete_env_parser.set_defaults(function=delete_env_func)
 
@@ -39,7 +41,7 @@ def main():
     activate_image_parser.add_argument('-n', '--name', type=str, default=None, required=True,
         help='The name of the environment to activate the image of.')
     activate_image_parser.add_argument('-i', '--image', type=str, default=None,
-        choices=['Singularity', 'Docker'], required=True, help='The image to be set to active.')
+        choices=['singularity', 'docker', 'all'], required=True, help='The image to be set to active.')
     activate_image_parser.set_defaults(function=activate_image_func)
 
     args = parser.parse_args()
@@ -63,6 +65,15 @@ def create_env_func(args):
         f_path = os.path.join(get_environment_path(), args.name, args.name + '.yml')
         open(f_path, 'w').close()
         sys.stderr.write('Environment config created at {}.\n'.format(f_path))
+
+    env_path = os.path.join(get_environment_path(), args.name)
+    image_paths = [get_image_paths('singularity'), get_image_paths('docker')]
+
+    # Copy over the images
+    unpack_image(env_path, image_paths)
+
+    # Write out the image locations
+    
 #end create_env_func()
 
 def delete_env_func(args):
@@ -112,8 +123,25 @@ def activate_env_func(args):
 #end activate_env_func()
 
 def activate_image_func(args):
+    pass
+#end activate_image_func()
+
+def setup_images_func(args):
     assert (args.name is not None)
     assert (args.image is not None)
+
+    env_path = os.path.join(get_environment_path(), args.name)
+
+    image_paths = []
+    if args.image == 'all':
+        image_paths.append(get_image_paths('singularity'))
+        image_paths.append(get_image_paths('docker'))
+    
+    else:
+        image_paths.append(get_image_paths(args.image))
+    
+    unpack_image(env_path, image_paths)
+
 
 if __name__ == '__main__':
     main()
