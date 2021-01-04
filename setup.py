@@ -1,4 +1,5 @@
 import setuptools
+import os
 
 from distutils.core import setup
 from pathlib import Path
@@ -21,9 +22,10 @@ setup(
         'termcolor',
         'tqdm',
         'pytest',
-        'importlib',
         'setuptools',
-        'tabulate'
+        'tabulate',
+        'python-dotenv',
+        'pyyaml'
     ],
     python_requires='>=3.6',
     description='Location of environment images for use during the pipeline',

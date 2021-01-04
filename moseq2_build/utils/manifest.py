@@ -121,7 +121,8 @@ def put_in_manifest(key, active=False):
 
         # Set the entry to active and remove active from all other entries
         if active is True:
-            set_active_row(key)
+            set_active_row(key, True)
+            sys.stderr.write('Set {} as the active image.\n'.format(key))
         return True
     else:
         sys.stderr.write('"{}" is already in the manifest.\n'.format(key))
@@ -129,7 +130,7 @@ def put_in_manifest(key, active=False):
     return False
 #end put_in_manifest()
 
-def set_active_row(key):
+def set_active_row(key, val):
     if is_manifest_created() is False:
         sys.stderr.write('No manifest file exists, please create one first.\n')
         return False
@@ -148,7 +149,7 @@ def set_active_row(key):
         if len(row) == 0:
             continue
         if key == row[0]:
-            row[1] = True
+            row[1] = val
             target = row
         else:
             row[1] = False
@@ -198,6 +199,3 @@ def contains_active_row():
 
     return False
 #end contains_active_row()
-
-if __name__ == '__main__':
-    print(is_active_row('another'))

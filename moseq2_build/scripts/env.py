@@ -1,10 +1,13 @@
 import argparse
 import tabulate
 import shutil
+import yaml
 
+from argparse import Namespace
 from moseq2_build.utils.manifest import *
 from moseq2_build.utils.image import *
 from moseq2_build.utils.constants import get_image_paths
+from moseq2_build.scripts.image import download_image_func
 
 def main():
     parser = argparse.ArgumentParser()
@@ -15,14 +18,16 @@ def main():
     env_subparsers = env_parser.add_subparsers()
 
     # Create environment parser
-    create_env_parser = env_subparsers.add_parser('create-env')
+    create_env_parser = env_subparsers.add_parser('create')
     create_env_parser.add_argument('-n', '--name', type=str, help='The name of the environment that is to be created.',
                                    default=None, required=True)
-    create_env_parser.add_argument('--set-active', action='store_true', help='Set the new environment to be the active one.')
+    create_env_parser.add_argument('--set-active-env', action='store_true', help='Set the new environment to be the active one.')
+    create_env_parser.add_argument('--set-active-image', action='store_true', help='Set the new image to be the active one.')
+    create_env_parser.add_argument('-d', '--download-image', choices=['singularity', 'docker', 'all'], required=False, help='Specify an image to download.')
     create_env_parser.set_defaults(function=create_env_func)
 
     # Delete environment parser
-    delete_env_parser = env_subparsers.add_parser('delete-env')
+    delete_env_parser = env_subparsers.add_parser('delete')
     delete_env_parser.add_argument('-n', '--name', type=str, default=None, required=True, help='Name of the environment to delete.')
     delete_env_parser.set_defaults(function=delete_env_func)
 
@@ -32,24 +37,21 @@ def main():
     list_env_parser.set_defaults(function=list_env_func)
 
     # Activate environment parser
-    activate_env_parser = env_subparsers.add_parser('activate-env')
+    activate_env_parser = env_subparsers.add_parser('activate')
     activate_env_parser.add_argument('-n', '--name', type=str, default=None, required=True, help='Name of the environment to be active.')
     activate_env_parser.set_defaults(function=activate_env_func)
 
-    # Activate image parser
-    activate_image_parser = env_subparsers.add_parser('activate-image')
-    activate_image_parser.add_argument('-n', '--name', type=str, default=None, required=True,
-        help='The name of the environment to activate the image of.')
-    activate_image_parser.add_argument('-i', '--image', type=str, default=None,
-        choices=['singularity', 'docker', 'all'], required=True, help='The image to be set to active.')
-    activate_image_parser.set_defaults(function=activate_image_func)
+    # Deactivate environment parser
+    deactivate_env_parser = env_subparsers.add_parser('deactivate')
+    deactivate_env_parser.add_argument('-n', '--name', type=str, default=None, required=True, help='Name of the environment to be active.')
+    deactivate_env_parser.set_defaults(function=deactivate_env_func)
 
     args = parser.parse_args()
     args.function(args)
+#end main()
 
 def create_env_func(args):
     assert (args.name is not None)
-    assert (args.set_active is not None)
 
     # Make sure the manifest file exists
     if is_manifest_created() is False:
@@ -57,23 +59,21 @@ def create_env_func(args):
         create_manifest_file()
 
     # Insert into the manifest
-    res = put_in_manifest(args.name, args.set_active)
+    res = put_in_manifest(args.name, args.set_active_env)
 
     # Create the environment file if we successfully put in the entry
     if res is True:
         os.mkdir(os.path.join(get_environment_path(), args.name))
         f_path = os.path.join(get_environment_path(), args.name, args.name + '.yml')
-        open(f_path, 'w').close()
+        with open(f_path, 'w') as f:
+            cons = {"GITHUB_PAT": None, "IMAGE_PATHS": None, "ACTIVE_IMAGE": None}
+            yaml.dump(cons, f)
         sys.stderr.write('Environment config created at {}.\n'.format(f_path))
 
-    env_path = os.path.join(get_environment_path(), args.name)
-    image_paths = [get_image_paths('singularity'), get_image_paths('docker')]
-
-    # Copy over the images
-    unpack_image(env_path, image_paths)
-
-    # Write out the image locations
-    
+        if args.download_image:
+            download_args = Namespace(name=args.name, image=args.download_image,
+                set_active=args.set_active_image)
+            download_image_func(download_args)
 #end create_env_func()
 
 def delete_env_func(args):
@@ -119,29 +119,13 @@ def list_env_func(args):
 
 def activate_env_func(args):
     assert (args.name is not None)
-    set_active_row(args.name)
+    set_active_row(args.name, True)
 #end activate_env_func()
 
-def activate_image_func(args):
-    pass
-#end activate_image_func()
-
-def setup_images_func(args):
+def deactivate_env_func(args):
     assert (args.name is not None)
-    assert (args.image is not None)
-
-    env_path = os.path.join(get_environment_path(), args.name)
-
-    image_paths = []
-    if args.image == 'all':
-        image_paths.append(get_image_paths('singularity'))
-        image_paths.append(get_image_paths('docker'))
-    
-    else:
-        image_paths.append(get_image_paths(args.image))
-    
-    unpack_image(env_path, image_paths)
-
+    set_active_row(args.name, False)
+#end deactivate_env_func()
 
 if __name__ == '__main__':
     main()
