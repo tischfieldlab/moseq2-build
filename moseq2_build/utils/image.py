@@ -24,7 +24,7 @@ def download_images(images, env):
 
     p = os.path.join(get_environment_path(), env, env + '.yml')
     with open(p, 'r') as f:
-        data = yaml.load(f, Loader=yaml.FullLoader)
+        data = yaml.load(f)
 
         if data == None or data['GITHUB_PAT'] == None:
             pat = getpass.getpass("Enter GitHub Personal Access Token (PAT): ")
@@ -93,7 +93,7 @@ def insert_image_in_environment(env, image):
 
     # Now we need to add this to the environment file
     with open(env_path, 'r') as f:
-        contents = yaml.load(f, Loader=yaml.FullLoader)
+        contents = yaml.load(f)
 
     if contents['IMAGE_PATHS'] is None:
         contents['IMAGE_PATHS'] = {image: image_path}
@@ -111,7 +111,7 @@ def set_active_image(env, image):
 
     env_path = os.path.join(get_environment_path(), env, env + '.yml')
     with open(env_path, 'r') as f:
-        contents = yaml.load(f, Loader=yaml.FullLoader)
+        contents = yaml.load(f)
 
     image_path = contents["IMAGE_PATHS"][image]
     sys.stderr.write('Setting {} as the active image.\n'.format(image_path))
@@ -125,7 +125,7 @@ def is_image_in_environment(env, image):
     env_path = os.path.join(get_environment_path(), env, env + '.yml')
 
     with open(env_path, 'r') as f:
-        contents = yaml.load(f, Loader=yaml.FullLoader)
+        contents = yaml.load(f)
 
     if contents['IMAGE_PATHS'] == None:
         return False

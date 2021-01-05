@@ -47,7 +47,7 @@ def get_active_image():
 
     env_path = os.path.join(get_environment_path(), env, env + '.yml')
     with open(env_path, 'r') as f:
-        contents = yaml.load(f, Loader=yaml.FullLoader)
+        contents = yaml.load(f)
 
     img = contents['ACTIVE_IMAGE']
 

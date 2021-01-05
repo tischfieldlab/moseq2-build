@@ -44,7 +44,7 @@ def extract(image, flip_path, remainder, command_table, inner_help = False):
 
 def place_classifier_in_yaml(config, flip):
     with open(config, 'r') as f:
-        contents = yaml.load(f, Loader=yaml.FullLoader)
+        contents = yaml.load(f)
     
     contents['flip_classifier'] = flip
 
