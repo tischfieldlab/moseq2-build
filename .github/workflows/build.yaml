@@ -60,12 +60,15 @@ jobs:
         make -C ./builddir
         sudo make -C ./builddir install
         cd ..
+
     - name: Build moseq2 Docker File
       run: |
         mkdir /tmp/image
         cp -r /home/runner/work/moseq2-build/moseq2-build/moseq2-build/moseq2_build/flip_classifiers/ ./moseq2-build/flip_files
         docker build -t moseq2 --build-arg SERVICE_TOKEN=${{ secrets.SERVICE_ACCOUNT_TOKEN }} --build-arg GIT_NAME=${{ secrets.SERVICE_ACCOUNT }} ./moseq2-build/
         ls
+        ls ./moseq2-build
+
     - name: Convert Docker Image to Singularity Image
       run: |
         docker run -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/image:/output --privileged -t --rm quay.io/singularity/docker2singularity moseq2
@@ -86,6 +89,7 @@ jobs:
         mkdir image
         tar -xf moseq2-docker.tar -C ./image
         tar -czvf ${DOCKER_RELEASE} ./image
+
     - name: Upload Docker Artifact
       # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       uses: actions/upload-artifact@v2

@@ -49,7 +49,7 @@ RUN source activate moseq2 \
     && rm -rf moseq2-extras
 
 # Copy the classifiers
-COPY moseq2-build/flip_files/*.pkl /moseq2_data/flip_files/
+COPY flip_files/*.pkl /moseq2_data/flip_files/
 
 # Create the requirements.txt file
 RUN source actiavte moseq2 \
