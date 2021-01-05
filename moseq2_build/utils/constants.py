@@ -10,9 +10,13 @@ DEFAULT_FLIP_FILE = 'flip_classifier_k2_c57_10to13weeks.pkl'
 IMAGE_FLIP_PATH = '/moseq2_data/flip_files'
 
 class Commands:
-    BATCH_TABLE = {'batch': ['--input-dir', '-i', '--config-file', '-c', '--filename']}
+    BATCH_TABLE = {'batch': ['--input-dir', '-i', '--config-file', '-c', '--filename'],
+                    'aggregate-extract-results': ['-i', '--input-dir', '-o', '--output-dir'],
+                    'aggregate-modeling-results': ['-i', '--input-dir', '-d', '--dest-file']
+    }
     EXTRACT_TABLE = {'generate-config': ['-o', '--output-file'],
-                'extract': ['--config-file', '--flip-classifier']}
+                'extract': ['--config-file', '--flip-classifier']
+    }
     SINGULARITY_COMS = {'exec': 'singularity exec', 'mount': '-B'}
     #  TODO: SUPPORT DOCKER
     DOCKER_COMS = None

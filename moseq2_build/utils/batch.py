@@ -10,7 +10,10 @@ from moseq2_build.utils.extract import place_classifier_in_yaml
 from moseq2_build.utils.command import *
 
 def batch(image, flip_path, batch_output, remainder, com_table, command_help=False):
-    mount_com = mount_dirs(remainder, com_table['mount'], Commands.BATCH_TABLE['batch'])
+    if 'aggregate-extract-results' in remainder:
+        mount_com = mount_dirs(remainder, com_table['mount'], Commands.BATCH_TABLE['aggregate-extract-results'])
+    else:
+        mount_com = mount_dirs(remainder, com_table['mount'], Commands.BATCH_TABLE['batch'])
 
     if command_help == True:
         remainder.append('--help')
@@ -25,7 +28,7 @@ def batch(image, flip_path, batch_output, remainder, com_table, command_help=Fal
         return
 
     config_file = ''
-    if '-c' not in remainder and '--config-file' not in remainder:
+    if '-c' not in remainder and '--config-file' not in remainder and 'extract-batch' in remainder:
         sys.stderr.write('No config file was passed in, so one will be generated at {}\n'.format(os.getcwd()))
         bash_command = " bash -c 'source activate moseq2; moseq2-extract generate-config;'"
         config_command = com_table["exec"] + ' ' + mount_com + ' ' + image + bash_command

@@ -5,7 +5,7 @@ on:
   push:
     #branches: [ master ] TODO: UNCOMMENT THIS
   pull_request:
-    branches: [ master ]
+    # branches: [ master ]
 
 jobs:
   build:
