@@ -37,9 +37,7 @@ jobs:
       run: |
         ls
         pwd
-        cd moseq2-build
-        ls
-        
+        ls moseq2-build/moseq2_build
 
     - name: Fetch Version String
       id: getversion
