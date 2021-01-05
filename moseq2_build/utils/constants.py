@@ -27,11 +27,17 @@ def get_environment_manifest():
 #end get_environment_manifest()
 
 def get_active_env():
+    if not os.path.isfile(get_environment_manifest()):
+        sys.stderr.write('No environment has been created. Please create one and rerun.\n')
+        exit(1)
+
     with open(get_environment_manifest(), 'r') as f:
         contents = csv.reader(f, delimiter='\t')
 
         env_name = ''
         for row in contents:
+            if row == []:
+                continue
             if row[1] == 'True':
                 env_name = row[0]
 
@@ -47,7 +53,7 @@ def get_active_image():
 
     env_path = os.path.join(get_environment_path(), env, env + '.yml')
     with open(env_path, 'r') as f:
-        contents = yaml.load(f)
+        contents = yaml.load(f, Loader=yaml.SafeLoader)
 
     img = contents['ACTIVE_IMAGE']
 

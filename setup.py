@@ -10,7 +10,8 @@ script_dir = Path(__file__).resolve().parent.joinpath(
 for s in script_dir.glob("*.py"):
     if s.name != "__init__.py":
         ep = s.name.replace(".py", "")
-        scripts.append("{} = moseq2_build.scripts.{}:main".format(ep, ep))
+        epp = 'moseq2-' + ep
+        scripts.append("{} = moseq2_build.scripts.{}:main".format(epp, ep))
 
 setup(
     name='moseq2-build',

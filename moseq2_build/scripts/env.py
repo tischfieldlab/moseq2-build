@@ -4,18 +4,14 @@ import shutil
 import yaml
 
 from argparse import Namespace
-from moseq2_build.utils.manifest import *
-from moseq2_build.utils.image import *
-from moseq2_build.utils.constants import get_image_paths
 from moseq2_build.scripts.image import download_image_func
+from moseq2_build.utils.manifest import *
+from moseq2_build.utils.constants import *
 
 def main():
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers()
-
-    env_parser = subparsers.add_parser('env', help='Contains all of the environment operations for the moseq2'
-                                                   ' environment')
-    env_subparsers = env_parser.add_subparsers()
+    parser = argparse.ArgumentParser(description='Contains all of the environment operations for the moseq2'
+                                                   ' environment.')
+    env_subparsers = parser.add_subparsers()
 
     # Create environment parser
     create_env_parser = env_subparsers.add_parser('create')
@@ -46,6 +42,10 @@ def main():
     deactivate_env_parser.add_argument('-n', '--name', type=str, default=None, required=True, help='Name of the environment to be active.')
     deactivate_env_parser.set_defaults(function=deactivate_env_func)
 
+    # List available flip files
+    flip_file_parser = env_subparsers.add_parser('list-classifiers')
+    flip_file_parser.set_defaults(function=list_classifiers_func)
+
     args = parser.parse_args()
     args.function(args)
 #end main()
@@ -73,7 +73,10 @@ def create_env_func(args):
         if args.download_image:
             download_args = Namespace(name=args.name, image=args.download_image,
                 set_active=args.set_active_image)
-            download_image_func(download_args)
+            try:
+                download_image_func(download_args)
+            except:
+                shutil.rmtree(get_environment_path(), args.name)
 #end create_env_func()
 
 def delete_env_func(args):
@@ -126,6 +129,14 @@ def deactivate_env_func(args):
     assert (args.name is not None)
     set_active_row(args.name, False)
 #end deactivate_env_func()
+
+def list_classifiers_func(args):
+    flips = get_all_classifiers()
+
+    sys.stderr.write('Available flip files are: \n')
+    for f in flips:
+        sys.stderr.write('{}\n'.format(f))
+#end list_classifiers_func()
 
 if __name__ == '__main__':
     main()

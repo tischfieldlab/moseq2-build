@@ -35,12 +35,13 @@ def main():
         choices=['singularity', 'docker'], required=True, help='The image to be set as active.')
     update_image_parser.set_defaults(function=update_active_image_func)
 
-    # List available flip files
-    flip_file_parser = subparsers.add_parser('list-classifiers')
-    flip_file_parser.set_defaults(function=list_classifiers_func)
+    # Get active image
+    list_images_parser = image_subparsers.add_parser('list')
+    list_images_parser.set_defaults(function=list_images_parser_func)
 
     args = parser.parse_args()
     args.function(args)
+#end main()
 
 def activate_image_func(args):
     assert (args.name is not None)
@@ -75,20 +76,16 @@ def download_image_func(args):
         set_active_image(args.name, args.image)
 #end download_image_func()
 
+def list_images_parser_func(args):
+    sys.stderr.write(get_active_image() + '\n')
+#end list_images_parser_func()
+
 def update_active_image_func(args):
     assert (args.name is not None)
     assert (args.image is not None)
 
     set_active_image(args.name, args.image)
 #end update_active_image_func()
-
-def list_classifiers_func(args):
-    flips = get_all_classifiers()
-
-    sys.stderr.write('Available flip files are: \n')
-    for f in flips:
-        sys.stderr.write('{}\n'.format(f))
-#end list_classifiers_func()
 
 if __name__ == "__main__":
     main()
