@@ -37,7 +37,7 @@ jobs:
       run: |
         ls
         pwd
-        ls moseq2-build/moseq2_build
+        ls /home/runner/work/moseq2-build/moseq2-build/moseq2-build/moseq2_build/flip_classifiers
 
     - name: Fetch Version String
       id: getversion
@@ -67,6 +67,7 @@ jobs:
     - name: Build moseq2 Docker File
       run: |
         mkdir /tmp/image
+        cp -r /home/runner/work/moseq2-build/moseq2-build/moseq2-build/moseq2_build/flip_classifiers/ ./moseq2-build/flip_files
         docker build -t moseq2 --build-arg SERVICE_TOKEN=${{ secrets.SERVICE_ACCOUNT_TOKEN }} --build-arg GIT_NAME=${{ secrets.SERVICE_ACCOUNT }} ./moseq2-build/
         ls
 
@@ -91,6 +92,7 @@ jobs:
         tar -czvf ${SINGUL_RELEASE} image
         rm -rf image
         mkdir image
+
         tar -xf moseq2-docker.tar -C ./image
         tar -czvf ${DOCKER_RELEASE} ./image
 
