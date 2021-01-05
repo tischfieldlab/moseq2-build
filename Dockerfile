@@ -1,140 +1,65 @@
-name: Build Moseq2 Container
+FROM continuumio/miniconda3:latest AS miniconda
 
-on:
-  repository_dispatch:
-  push:
-    #branches: [ master ] TODO: UNCOMMENT THIS
-  pull_request:
-    branches: [ master ]
+# Add conda to the path
+RUN echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Setup Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: '^1.13.1'
+# Switch over the shell version
+SHELL ["/bin/bash", "-c"]
 
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          libseccomp-dev \
-          pkg-config \
-          squashfs-tools \
-          cryptsetup \
-          uuid-dev
-    - name: Checkout moseq2-build
-      uses: actions/checkout@v2
-      with:
-        path: moseq2-build
-        fetch-depth: 0
+# Install dependencies
+RUN apt-get update --fix-missing -y \
+    && apt-get install -y \
+        build-essential \
+        libxrender-dev \
+        libsm6 \
+        libglib2.0-0 \
+        vim-gtk3 \
+        libgl1-mesa-dev
 
-    - name: List checkout contents
-      run: |
-        ls
-        pwd
-        ls /home/runner/work/moseq2-build/moseq2-build/moseq2-build/moseq2_build/flip_classifiers
-    - name: Fetch Version String
-      id: getversion
-      run: |
-        baseversion=$(grep -oP "version='\K([\.\d]+)" ./moseq2-build/setup.py)
-        fullversion=v$baseversion.${{ github.run_number }}
-        echo $fullversion > ./version.txt
-        echo "::set-output name=version::$(cat ./version.txt)"
-        cat ./version.txt
-    - name: Checkout Singularity
-      uses: actions/checkout@v2
-      with:
-        repository: sylabs/singularity
-        ref: v3.5.0
-        path: singularity
-        fetch-depth: 1
+# Arguments for cloning down the repos and installing them to the conda environment
+ARG GIT_NAME
+ARG SERVICE_TOKEN
 
-    - name: Build Singularity
-      run: |
-        cd singularity
-        ./mconfig
-        make -C ./builddir
-        sudo make -C ./builddir install
-        cd ..
-    - name: Build moseq2 Docker File
-      run: |
-        mkdir /tmp/image
-        cp -r /home/runner/work/moseq2-build/moseq2-build/moseq2-build/moseq2_build/flip_classifiers/ ./moseq2-build/flip_files
-        docker build -t moseq2 --build-arg SERVICE_TOKEN=${{ secrets.SERVICE_ACCOUNT_TOKEN }} --build-arg GIT_NAME=${{ secrets.SERVICE_ACCOUNT }} ./moseq2-build/
-        ls
-    - name: Convert Docker Image to Singularity Image
-      run: |
-        docker run -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/image:/output --privileged -t --rm quay.io/singularity/docker2singularity moseq2
-        docker image save moseq2 > moseq2-docker.tar
-        ls /tmp/image
-    
-    - name: Prepare Images For Release
-      id: bundle
-      run: |
-        SUFFIX="${{ steps.getversion.outputs.version }}.tar.gz"
-        SINGUL_RELEASE="moseq2-singularity.${SUFFIX}"
-        echo "::set-output name=SINGUL_RELEASE::${SINGUL_RELEASE}"
-        DOCKER_RELEASE="moseq2-docker.${SUFFIX}"
-        echo "::set-output name=DOCKER_RELEASE::${DOCKER_RELEASE}"
-        mv /tmp/image .
-        tar -czvf ${SINGUL_RELEASE} image
-        rm -rf image
-        mkdir image
-        tar -xf moseq2-docker.tar -C ./image
-        tar -czvf ${DOCKER_RELEASE} ./image
-    - name: Upload Docker Artifact
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: Docker
-        path: ${{ steps.bundle.outputs.DOCKER_RELEASE }}
+# Create and install all moseq2 packages to the environment
+RUN source ~/.bashrc \
+    && conda update -n base -c defaults conda \
+    && conda create -n moseq2 python=3.6 -y \
+    && conda activate moseq2 \
+    && conda install -c conda-forge ffmpeg \
+    && conda install --yes -c conda-forge scikit-image \
+    # NOTE: THIS IS A HACK!!! LATEST VERSION OF SCIKIT DOES NOT WORK
+    && pip install requests future cython "pytest>=3.6" pytest-cov codecov \
+    && pip install git+https://github.com/tischfieldlab/pyhsmm.git \
+    && pip install git+https://github.com/tischfieldlab/pyhsmm-autoregressive.git \
+    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extract.git \
+    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-pca.git \
+    # NOTE: Forward install all the pre-reqs for moseq2-model so that we don't rely on broken URL paths in the setup.py file
+    && pip install future h5py click numpy "joblib==0.13.1" hdf5storage "ruamel.yaml>=0.15.0" tqdm \
+    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-model.git --no-deps \
+    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-batch.git \
+    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-viz.git \
+    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git
 
-    - name: Upload Singularity Artifact
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: Singularity
-        path: ${{ steps.bundle.outputs.SINGUL_RELEASE }}
+# Run tests to make sure all repos work
+RUN source activate moseq2 \
+    && git clone https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git \
+    && pytest moseq2-extras/tests/test_entry_points.py \
+    && mkdir /moseq2_data \
+    && mkdir /moseq2_data/flip_files \
+    && rm -rf moseq2-extras
 
-    - name: Upload Version Artifact
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: Version
-        path: ./version.txt
+# Copy the classifiers
+ADD moseq2-build/flip_files/*.pkl /moseq2_data/flip_files/
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-    steps:
-    - name: Download Artifacts
-      uses: actions/download-artifact@v2
+# Create the requirements.txt file
+RUN source actiavte moseq2 \
+    && pip freeze > ../requirements.txt
 
-    - name: Read VERSION file
-      id: getversion
-      run: |
-        echo "::set-output name=version::$(cat ./Version/version.txt)"
-        cat ./Version/version.txt
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.getversion.outputs.version }}
-        release_name: Release ${{ steps.getversion.outputs.version }}
-        draft: true
-        prerelease: false
+# Add env activation in bashrc file
+RUN echo 'source actiavte moseq2' >> ~/.bashrc
 
-    - run: |
-        dir
-    - name: Upload Release Assets
-      uses: shogo82148/actions-upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./**/*.tar.gz
+# Initialize the shell for conda and activate moseq2 on startupa
+SHELL ["conda", "run", "-n", "moseq2", "/bin/bash", "-c"]
+
+# Setup entry point for bash
+ENTRYPOINT ["/bin/bash"]
