@@ -98,21 +98,21 @@ jobs:
         tar -czvf ${DOCKER_RELEASE} ./image
 
     - name: Upload Docker Artifact
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       uses: actions/upload-artifact@v2
       with:
         name: Docker
         path: ${{ steps.bundle.outputs.DOCKER_RELEASE }}
 
     - name: Upload Singularity Artifact
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       uses: actions/upload-artifact@v2
       with:
         name: Singularity
         path: ${{ steps.bundle.outputs.SINGUL_RELEASE }}
 
     - name: Upload Version Artifact
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       uses: actions/upload-artifact@v2
       with:
         name: Version
@@ -121,7 +121,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+    # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
     steps:
     - name: Download Artifacts
       uses: actions/download-artifact@v2
