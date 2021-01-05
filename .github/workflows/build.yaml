@@ -34,7 +34,9 @@ jobs:
         fetch-depth: 0
 
     - name: List checkout contents
-      run: ls
+      run: |
+        ls
+        pwd
 
     - name: Fetch Version String
       id: getversion
