@@ -52,7 +52,7 @@ RUN source activate moseq2 \
 COPY flip_files/*.pkl /moseq2_data/flip_files/
 
 # Create the requirements.txt file
-RUN source actiavte moseq2 \
+RUN source activate moseq2 \
     && pip freeze > ../requirements.txt
 
 # Add env activation in bashrc file
