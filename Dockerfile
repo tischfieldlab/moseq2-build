@@ -49,7 +49,11 @@ RUN source activate moseq2 \
     && rm -rf moseq2-extras
 
 # Copy the classifiers
-ADD flip_files/*.pkl /moseq2_data/flip_files/
+ADD moseq2-build/flip_files/*.pkl /moseq2_data/flip_files/
+
+# Create the requirements.txt file
+RUN source actiavte moseq2 \
+    && pip freeze > ../requirements.txt
 
 # Add env activation in bashrc file
 RUN echo 'source actiavte moseq2' >> ~/.bashrc
