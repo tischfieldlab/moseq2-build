@@ -49,7 +49,7 @@ RUN source activate moseq2 \
     && rm -rf moseq2-extras
 
 # Copy the classifiers
-ADD /home/runner/work/moseq2-build/moseq2-build/moseq2-build /moseq2_data/flip_files
+ADD /home/runner/work/moseq2-build/moseq2-build/moseq2-build/moseq2_build/flip_classifiers /moseq2_data/flip_files
 
 # Add env activation in bashrc file
 RUN echo 'source actiavte moseq2' >> ~/.bashrc
