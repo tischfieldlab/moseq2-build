@@ -4,11 +4,8 @@ from moseq2_build.utils.image import *
 from moseq2_build.utils.constants import *
 
 def main():
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers()
-
-    image_parser = subparsers.add_parser('image', help='Contains all of the image options for the moseq2 environment.')
-    image_subparsers = image_parser.add_subparsers()
+    parser = argparse.ArgumentParser(description='Contains all of the image options for the moseq2 environment.')
+    image_subparsers = parser.add_subparsers()
 
     # Activate image
     activate_image_parser = image_subparsers.add_parser('activate')
