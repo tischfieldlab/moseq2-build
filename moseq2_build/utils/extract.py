@@ -6,8 +6,6 @@ from moseq2_build.utils.mount import mount_dirs
 
 def extract(image, flip_path, remainder, command_table, inner_help = False):
     assert (len(command_table) != 0)
-    
-    flip_path = get_classifier_path() + '/' + flip_path
 
     if 'generate-config' in remainder:
         tab = Commands.EXTRACT_TABLE['generate-config']

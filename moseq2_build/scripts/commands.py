@@ -32,6 +32,8 @@ def batch_parser_func(args, unknown):
     assert (args.flip_path is not None)
     assert (args.batch_output is not None)
 
+    args.flip_path = get_classifier_path() + '/' + args.flip_path
+
     file_commands = None
     if args.image.endswith('.sif'):
         sys.stderr.write('Detected Singularity image {}\n'.format(os.path.basename(args.image)))
@@ -49,6 +51,7 @@ def extract_parser_func(args, remainder):
     assert (args.flip_path is not None)
 
     file_commands = []
+    args.flip_path = get_classifier_path() + '/' + args.flip_path
 
     if (args.image.endswith('.sif')):
         sys.stderr.write('Detected Singularity image {}\n'.format(os.path.basename(args.image)))
