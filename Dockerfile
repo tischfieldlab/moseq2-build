@@ -40,17 +40,16 @@ RUN source ~/.bashrc \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-viz.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git
 
-
 # Run tests to make sure all repos work
 RUN source activate moseq2 \
     && git clone https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git \
     && pytest moseq2-extras/tests/test_entry_points.py \
-    && rm -rf moseq2-extras \
     && mkdir /moseq2_data \
     && mkdir /moseq2_data/flip_files \
+    && rm -rf moseq2-extras
 
-# Copy the flip classifiers to a known directory
-COPY /home/runner/work/moseq2-build/moseq2-build/moseq2-build/moseq2_build/flip_classifiers/* /moseq2_data/flip_files
+# Copy the classifiers
+ADD /home/runner/work/moseq2-build/moseq2-build/moseq2-build /moseq2_data/flip_files
 
 # Add env activation in bashrc file
 RUN echo 'source actiavte moseq2' >> ~/.bashrc
