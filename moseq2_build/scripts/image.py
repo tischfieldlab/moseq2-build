@@ -74,6 +74,7 @@ def download_image_func(args):
 #end download_image_func()
 
 def list_images_parser_func(args):
+    sys.stderr.write('Active image: \n')
     sys.stderr.write(get_active_image() + '\n')
 #end list_images_parser_func()
 
