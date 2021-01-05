@@ -49,8 +49,8 @@ RUN source activate moseq2 \
     && mkdir /moseq2_data \
     && mkdir /moseq2_data/flip_files \
 
-# Copy the flip classifier to a known directory
-COPY /home/runner/work/moseq2-build/moseq2-build/moseq2-build/flip_classifiers/* /moseq2_data/flip_files
+# Copy the flip classifiers to a known directory
+COPY /home/runner/work/moseq2-build/moseq2-build/moseq2-build/moseq2_build/flip_classifiers/* /moseq2_data/flip_files
 
 # Add env activation in bashrc file
 RUN echo 'source actiavte moseq2' >> ~/.bashrc
