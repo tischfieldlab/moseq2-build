@@ -32,7 +32,9 @@ jobs:
       with:
         path: moseq2-build
         fetch-depth: 0
-        run: ls
+
+    - name: List checkout contents
+      run: ls
 
     - name: Fetch Version String
       id: getversion
