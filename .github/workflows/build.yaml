@@ -26,7 +26,6 @@ jobs:
           squashfs-tools \
           cryptsetup \
           uuid-dev
-
     - name: Checkout moseq2-build
       uses: actions/checkout@v2
       with:
@@ -38,7 +37,6 @@ jobs:
         ls
         pwd
         ls /home/runner/work/moseq2-build/moseq2-build/moseq2-build/moseq2_build/flip_classifiers
-
     - name: Fetch Version String
       id: getversion
       run: |
@@ -47,7 +45,6 @@ jobs:
         echo $fullversion > ./version.txt
         echo "::set-output name=version::$(cat ./version.txt)"
         cat ./version.txt
-
     - name: Checkout Singularity
       uses: actions/checkout@v2
       with:
@@ -63,15 +60,12 @@ jobs:
         make -C ./builddir
         sudo make -C ./builddir install
         cd ..
-
     - name: Build moseq2 Docker File
       run: |
         mkdir /tmp/image
         cp -r /home/runner/work/moseq2-build/moseq2-build/moseq2-build/moseq2_build/flip_classifiers/ ./moseq2-build/flip_files
         docker build -t moseq2 --build-arg SERVICE_TOKEN=${{ secrets.SERVICE_ACCOUNT_TOKEN }} --build-arg GIT_NAME=${{ secrets.SERVICE_ACCOUNT }} ./moseq2-build/
         ls
-        ls ./moseq2-build/
-
     - name: Convert Docker Image to Singularity Image
       run: |
         docker run -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/image:/output --privileged -t --rm quay.io/singularity/docker2singularity moseq2
@@ -82,21 +76,16 @@ jobs:
       id: bundle
       run: |
         SUFFIX="${{ steps.getversion.outputs.version }}.tar.gz"
-
         SINGUL_RELEASE="moseq2-singularity.${SUFFIX}"
         echo "::set-output name=SINGUL_RELEASE::${SINGUL_RELEASE}"
-
         DOCKER_RELEASE="moseq2-docker.${SUFFIX}"
         echo "::set-output name=DOCKER_RELEASE::${DOCKER_RELEASE}"
-
         mv /tmp/image .
         tar -czvf ${SINGUL_RELEASE} image
         rm -rf image
         mkdir image
-
         tar -xf moseq2-docker.tar -C ./image
         tar -czvf ${DOCKER_RELEASE} ./image
-
     - name: Upload Docker Artifact
       # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       uses: actions/upload-artifact@v2
@@ -131,7 +120,6 @@ jobs:
       run: |
         echo "::set-output name=version::$(cat ./Version/version.txt)"
         cat ./Version/version.txt
-
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -145,7 +133,6 @@ jobs:
 
     - run: |
         dir
-
     - name: Upload Release Assets
       uses: shogo82148/actions-upload-release-asset@v1
       with:
