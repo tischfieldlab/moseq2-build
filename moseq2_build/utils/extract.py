@@ -23,7 +23,7 @@ def extract(image, flip_path, remainder, command_table):
     check_stderr(error)
     check_stdout(output)
 
-    if ('generate-config' in remainder and inner_help is False):
+    if ('generate-config' in remainder):
         configPath = 'config.yaml'
         if '-o' in remainder:
             idx = remainder.index('-o') + 1

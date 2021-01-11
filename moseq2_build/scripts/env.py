@@ -34,7 +34,7 @@ def main():
     list_env_parser.set_defaults(function=list_env_func)
 
     # Activate environment parser
-    activate_env_parser = env_subparsers.add_parser('activate-env')
+    activate_env_parser = env_subparsers.add_parser('use-env')
     activate_env_parser.add_argument('-n', '--name', type=str, default=None, required=True, help='Name of the environment to be active.')
     activate_env_parser.set_defaults(function=activate_env_func)
 
@@ -52,7 +52,7 @@ def main():
     activate_image_parser.set_defaults(function=activate_image_func)
 
     # Download image
-    download_image_parser = env_subparsers.add_parser('download')
+    download_image_parser = env_subparsers.add_parser('download-image')
     download_image_parser.add_argument('-n', '--name', type=str, default=None, required=True,
         help='The name of the environment to activate the image of.')
     download_image_parser.add_argument('-i', '--image', type=str, default=None,
