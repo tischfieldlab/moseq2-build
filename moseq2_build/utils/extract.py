@@ -4,7 +4,7 @@ from moseq2_build.utils.command import *
 from moseq2_build.utils.constants import *
 from moseq2_build.utils.mount import mount_dirs
 
-def extract(image, flip_path, remainder, command_table, inner_help = False):
+def extract(image, flip_path, remainder, command_table):
     assert (len(command_table) != 0)
 
     if 'generate-config' in remainder:
@@ -13,9 +13,6 @@ def extract(image, flip_path, remainder, command_table, inner_help = False):
         tab = Commands.EXTRACT_TABLE['extract']
 
     mount_com = mount_dirs(remainder, command_table['mount'], tab)
-
-    if inner_help == True:
-        remainder.append('--help')
 
     bash_com = " bash -c 'source activate moseq2; moseq2-extract " + ' '.join(remainder) + "'"
     final_com = command_table['exec'] + ' ' + mount_com + ' ' + image + bash_com

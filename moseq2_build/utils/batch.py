@@ -9,16 +9,16 @@ from moseq2_build.utils.constants import Commands
 from moseq2_build.utils.extract import place_classifier_in_yaml
 from moseq2_build.utils.command import *
 
-def batch(image, flip_path, batch_output, remainder, com_table, command_help=False):
+def batch(image, flip_path, batch_output, remainder, com_table):
     if 'aggregate-extract-results' in remainder:
         mount_com = mount_dirs(remainder, com_table['mount'], Commands.BATCH_TABLE['aggregate-extract-results'])
     else:
         mount_com = mount_dirs(remainder, com_table['mount'], Commands.BATCH_TABLE['batch'])
 
-    if command_help == True:
-        remainder.append('--help')
+    if '-h' in remainder or '--help' in remainder:
         bash_command = " bash -c 'source activate moseq2; moseq2-batch " + ' '.join(remainder) + ";'"
         final_command = com_table["exec"] + ' ' + image + bash_command
+        print(final_command)
 
         process = subprocess.Popen(final_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         output, error = process.communicate()
