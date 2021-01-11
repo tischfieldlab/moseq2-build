@@ -44,7 +44,7 @@ def main():
     deactivate_env_parser.set_defaults(function=deactivate_env_func)
 
     # Activate image
-    activate_image_parser = env_subparsers.add_parser('activate-image')
+    activate_image_parser = env_subparsers.add_parser('use-image')
     activate_image_parser.add_argument('-n', '--name', type=str, default=None, required=True,
         help='The name of the environment to activate the image of.')
     activate_image_parser.add_argument('-i', '--image', type=str, default=None,
@@ -59,14 +59,6 @@ def main():
         choices=['singularity', 'docker', 'all'], required=True, help='The image to be downloaded.')
     download_image_parser.add_argument('--set-active', action='store_true', help='Sets the image to active.')
     download_image_parser.set_defaults(function=download_image_func)
-
-     # Update image
-    update_image_parser = env_subparsers.add_parser('update-image')
-    update_image_parser.add_argument('-n', '--name', type=str, default=None, required=True,
-        help='The name of the environment to activate the image of.')
-    update_image_parser.add_argument('-i', '--image', type=str, default=None,
-        choices=['singularity', 'docker'], required=True, help='The image to be set as active.')
-    update_image_parser.set_defaults(function=update_active_image_func)
 
     # Get active image
     list_images_parser = env_subparsers.add_parser('list-image')
@@ -175,7 +167,7 @@ def activate_image_func(args):
     assert (args.name is not None)
     assert (args.image is not None)
 
-    insert_image_in_environment(args.name, args.image)
+    set_active_image(args.name, args.image)
 #end activate_image_func()
 
 def download_image_func(args):
@@ -208,13 +200,6 @@ def list_images_parser_func(args):
     sys.stderr.write('Active image: \n')
     sys.stderr.write(get_active_image() + '\n')
 #end list_images_parser_func()
-
-def update_active_image_func(args):
-    assert (args.name is not None)
-    assert (args.image is not None)
-
-    set_active_image(args.name, args.image)
-#end update_active_image_func()
 
 if __name__ == '__main__':
     main()
