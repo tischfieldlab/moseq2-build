@@ -18,7 +18,6 @@ def batch(image, flip_path, batch_output, remainder, com_table):
     if '-h' in remainder or '--help' in remainder:
         bash_command = " bash -c 'source activate moseq2; moseq2-batch " + ' '.join(remainder) + ";'"
         final_command = com_table["exec"] + ' ' + image + bash_command
-        print(final_command)
 
         process = subprocess.Popen(final_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         output, error = process.communicate()
