@@ -53,13 +53,14 @@ COPY flip_files/*.pkl /moseq2_data/flip_files/
 
 # Create the requirements.txt file
 RUN source activate moseq2 \
-    && pip freeze > ../requirements.txt
+    && pip freeze > /tmp/requirements.txt  \
+    && pwd && ls
 
 # Add env activation in bashrc file
-RUN echo 'source actiavte moseq2' >> ~/.bashrc
+RUN echo 'source activate moseq2' >> ~/.bashrc
 
 # Initialize the shell for conda and activate moseq2 on startupa
 SHELL ["conda", "run", "-n", "moseq2", "/bin/bash", "-c"]
 
 # Setup entry point for bash
-ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["/bin/bash", "-l", "-c"]
