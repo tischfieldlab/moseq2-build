@@ -96,7 +96,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: requirements.txt
-        path: /home/runner/work/moseq2-build/moseq2-build/moseq2-build/
+        path: /home/runner/work/moseq2-build/moseq2-build/moseq2-build/requirements.txt
 
     - name: Upload Docker Artifact
       # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
