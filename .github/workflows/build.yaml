@@ -91,7 +91,7 @@ jobs:
         tar -xf moseq2-docker.tar -C ./image
         tar -czvf ${DOCKER_RELEASE} ./image
 
-    - name: Upload requirements.txt
+    - name: Upload Pipeline Package info
     # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       uses: actions/upload-artifact@v2
       with:
