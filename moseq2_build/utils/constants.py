@@ -108,6 +108,3 @@ def get_image_paths(env, image):
     sys.stderr.write('Could not find any images. Please make sure you have them downloaded first.\n')
     exit(1)
 #end get_image_paths()
-
-if __name__ == "__main__":
-    print(get_all_classifiers())
