@@ -66,7 +66,8 @@ jobs:
         mkdir /tmp/image
         cp -r /home/runner/work/moseq2-build/moseq2-build/moseq2-build/moseq2_build/flip_classifiers/ ./moseq2-build/flip_files
         docker build -t moseq2 --build-arg SERVICE_TOKEN=${{ secrets.SERVICE_ACCOUNT_TOKEN }} --build-arg GIT_NAME=${{ secrets.SERVICE_ACCOUNT }} ./moseq2-build/
-        sudo docker run moseq2 cat /tmp/requirements.txt > /home/runner/work/moseq2-build/moseq2-build/requirements.txt
+        docker run moseq2 cat /tmp/requirements.txt > /home/runner/work/moseq2-build/moseq2-build/requirements.txt
+        tar -czvf /home/runner/work/moseq2-build/moseq2-build/requirements.tar.gz /home/runner/work/moseq2-build/moseq2-build/requirements.txt
         ls
         ls ./moseq2-build
 
@@ -95,8 +96,8 @@ jobs:
     # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       uses: actions/upload-artifact@v2
       with:
-        name: requirements.txt
-        path: /home/runner/work/moseq2-build/moseq2-build/requirements.txt
+        name: Requirements
+        path: /home/runner/work/moseq2-build/moseq2-build/requirements.tar.gz
 
     - name: Upload Docker Artifact
       # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
