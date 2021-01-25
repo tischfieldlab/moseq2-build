@@ -97,7 +97,9 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Requirements
-        path: /home/runner/work/moseq2-build/moseq2-build/*.txt
+        path: |
+          /home/runner/work/moseq2-build/moseq2-build/pipfreeze.txt
+          /home/runner/work/moseq2-build/moseq2-build/condalist.txt
 
     - name: Upload Docker Artifact
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
