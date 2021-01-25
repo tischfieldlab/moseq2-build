@@ -5,7 +5,7 @@ import re
 from stat import S_IEXEC
 
 from moseq2_build.utils.mount import mount_dirs
-from moseq2_build.utils.constants import Commands
+from moseq2_build.utils.constants import Commands, DEFAULT_FLIP_FILE
 from moseq2_build.utils.extract import place_classifier_in_yaml
 from moseq2_build.utils.command import *
 
@@ -25,6 +25,10 @@ def batch(image, flip_path, batch_output, remainder, com_table):
         check_stderr(error)
         check_stdout(output)
         return
+
+    # If the user passed in the --flip-file and the --config flags, tell them the config will not be overwritten
+    if ('-c' in remainder or '--config-file' in remainder) and flip_path != DEFAULT_FLIP_FILE:
+        sys.stderr.write('WARNING: Flip file and config file have been passed in. Ignoring the flip file so config file will NOT be overwitten.')
 
     config_file = ''
     if '-c' not in remainder and '--config-file' not in remainder and 'extract-batch' in remainder:
