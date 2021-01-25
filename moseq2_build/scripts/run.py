@@ -27,8 +27,12 @@ def main():
     if len(sys.argv) > 1:
         if sys.argv[1] == '-h' or sys.argv[1] == '--help':
             parser.print_help()
+            sys.stdout.write('\n---------------------------- COMMANDS FOR BATCH ----------------------------\n')
             batch_parser.print_help()
+            sys.stdout.write('----------------------------------------------------------------------------\n\n')
+            sys.stdout.write('---------------------------- COMMANDS FOR EXTRACT --------------------------\n')
             extract_parser.print_help()
+            sys.stdout.write('----------------------------------------------------------------------------\n')
             return
 
     try:
