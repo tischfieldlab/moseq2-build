@@ -5,16 +5,27 @@ from moseq2_build.utils.constants import *
 from moseq2_build.utils.mount import mount_dirs
 
 def extract(image, flip_path, remainder, command_table):
-    assert (len(command_table) != 0)
 
-    if 'generate-config' in remainder:
-        tab = Commands.EXTRACT_TABLE['generate-config']
-    else:
-        tab = Commands.EXTRACT_TABLE['extract']
+    # Field the help commands first.
+    if '-h' in remainder or '--help' in remainder:
+        extract_command = " bash -c 'source activate moseq2; moseq2-extract " + ' '.join(remainder) + ";'"
+        final_command = command_table["exec"] + ' ' + image + extract_command
 
-    mount_com = mount_dirs(remainder, command_table['mount'], tab)
+        process = subprocess.Popen(final_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        output, error = process.communicate()
 
-    bash_com = " bash -c 'source activate moseq2; moseq2-extract " + ' '.join(remainder) + "'"
+        check_stderr(error)
+        check_stdout(output)
+        return
+
+    # Figure out if we are running a command that needs to be mounted
+    mount_com = ''
+    for v in remainder:
+        if v in Commands.BATCH_TABLE.keys():
+            mount_com = mount_dirs(remainder, command_table['mount'], Commands.BATCH_TABLE[v])
+
+    bash_com = handle_entry_points(remainder)
+
     final_com = command_table['exec'] + ' ' + mount_com + ' ' + image + bash_com
 
     process = subprocess.Popen(final_com, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -23,19 +34,28 @@ def extract(image, flip_path, remainder, command_table):
     check_stderr(error)
     check_stdout(output)
 
-    if ('generate-config' in remainder):
-        configPath = 'config.yaml'
-        if '-o' in remainder:
-            idx = remainder.index('-o') + 1
-            assert(idx < len(remainder))
-            configPath = remainder[idx]
-        elif '--output-file' in remainder:
-            idx = remainder.index('--output-file') + 1
-            assert(idx < len(remainder))
-            configPath = remainder[idx]
-
-        place_classifier_in_yaml(os.path.abspath(configPath), flip_path)
+    if 'generate-config' in remainder:
+        handle_generate_config(remainder, flip_path)
 #end extract()
+
+def handle_entry_points(remainder):
+    bash_command = " bash -c 'source activate moseq2; moseq2-extract " + ' '.join(remainder) + "'"
+    return bash_command
+#end handle_entry_points()
+
+def handle_generate_config(remainder, flip_path):
+    configPath = 'config.yaml'
+    if '-o' in remainder:
+        idx = remainder.index('-o') + 1
+        assert(idx < len(remainder))
+        configPath = remainder[idx]
+    elif '--output-file' in remainder:
+        idx = remainder.index('--output-file') + 1
+        assert(idx < len(remainder))
+        configPath = remainder[idx]
+
+    place_classifier_in_yaml(os.path.abspath(configPath), flip_path)
+#end handle_generate_config()
 
 def place_classifier_in_yaml(config, flip):
     with open(config, 'r') as f:

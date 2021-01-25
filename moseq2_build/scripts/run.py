@@ -68,7 +68,7 @@ def extract_parser_func(args, remainder):
     args.flip_path = get_classifier_path() + '/' + args.flip_path
 
     if (args.image.endswith('.sif')):
-        sys.stderr.write('Detected Singularity image {}\n'.format(os.path.basename(args.image)))
+        sys.stderr.write('Detected Singularity image {} using environment {}\n'.format(os.path.basename(args.image), get_active_env()))
         file_commands = Commands.SINGULARITY_COMS
 
     extract(args.image, args.flip_path, remainder, file_commands)

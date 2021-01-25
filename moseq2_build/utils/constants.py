@@ -21,7 +21,11 @@ class Commands:
 
     EXTRACT_TABLE = {
         'generate-config':              ['-o', '--output-file'],
-        'extract':                      ['--config-file', '--flip-classifier']
+        'extract':                      ['--config-file', '--flip-classifier', '--output-dir'],
+        'convert-raw-to-avi':           ['-o', '--output-file'],
+        'copy-slice':                   ['-o', '--output-file'],
+        'download-flip-file':           ['--output-dir'],
+        'find-roi':                     ['--output-dir', '--config-file']
     }
 
     SINGULARITY_COMS = {

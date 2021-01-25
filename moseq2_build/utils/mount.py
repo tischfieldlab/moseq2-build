@@ -21,8 +21,11 @@ def mount_dirs(remainder, mount_string, com_table):
                     with open(remainder[idx], 'r') as f:
                         contents = yaml.load(f, yaml.FullLoader)
                     # If the config classifier is on the host machine, we need to mount it
-                    if contents['flip_classifier'] and os.path.isfile(contents['flip_classifier']):
-                        pathKeys.append(os.path.abspath(contents['flip_classifier']))
+                    try:
+                        if contents['flip_classifier'] and os.path.isfile(contents['flip_classifier']):
+                            pathKeys.append(os.path.abspath(contents['flip_classifier']))
+                    except:
+                        pass
 
             pathKeys.append(os.path.abspath(remainder[idx]))
 
@@ -36,7 +39,3 @@ def mount_dirs(remainder, mount_string, com_table):
 
     return mount_com
 #end mount_dirs()
-
-def mount_path(mount_string, com_table):
-    pass
-#end mount_path()
