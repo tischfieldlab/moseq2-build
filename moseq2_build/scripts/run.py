@@ -50,7 +50,7 @@ def batch_parser_func(args, unknown):
 
     file_commands = None
     if args.image.endswith('.sif'):
-        sys.stderr.write('Detected Singularity image {}\n'.format(os.path.basename(args.image)))
+        sys.stderr.write('Detected Singularity image {} using environment {}\n'.format(os.path.basename(args.image), get_active_env()))
         file_commands = Commands.SINGULARITY_COMS
 
     else:

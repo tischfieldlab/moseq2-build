@@ -46,7 +46,7 @@ def batch(image, flip_path, batch_output, remainder, com_table):
 
         place_classifier_in_yaml('config.yaml', flip_path)
         config_file = " -c config.yaml"
-        sys.stderr.write('config.yaml has successfully been created at {}'.format(os.getcwd()))
+        sys.stderr.write('config.yaml has successfully been created at {}\n'.format(os.getcwd()))
 
     bash_command = " bash -c 'source activate moseq2; moseq2-batch " + ' '.join(remainder) + config_file + "'"
     final_command = com_table["exec"] + ' ' + mount_com + ' ' + image + bash_command
