@@ -10,16 +10,30 @@ DEFAULT_FLIP_FILE = 'flip_classifier_k2_c57_10to13weeks.pkl'
 IMAGE_FLIP_PATH = '/moseq2_data/flip_files'
 
 class Commands:
-    BATCH_TABLE = {'batch': ['--input-dir', '-i', '--config-file', '-c', '--filename'],
-                    'aggregate-extract-results': ['-i', '--input-dir', '-o', '--output-dir'],
-                    'aggregate-modeling-results': ['-i', '--input-dir', '-d', '--dest-file']
+    BATCH_TABLE = {
+        'extract-batch':                ['--input-dir', '-i', '--config-file', '-c', '--filename'],
+        'aggregate-extract-results':    ['-i', '--input-dir', '-o', '--output-dir'],
+        'aggregate-modeling-results':   ['-i', '--input-dir', '-d', '--dest-file'],
+        'convert-raw-to-avi':           ['-i', '--input-dir'],
+        'gen-grid-search-config':       ['-o', '--output-dir', '-n', '--name'],
+        'learn-model-parameter-scan':   ['--output-dir', '--input-file', '--log-path']
     }
-    EXTRACT_TABLE = {'generate-config': ['-o', '--output-file'],
-                'extract': ['--config-file', '--flip-classifier']
+
+    EXTRACT_TABLE = {
+        'generate-config':              ['-o', '--output-file'],
+        'extract':                      ['--config-file', '--flip-classifier']
     }
-    SINGULARITY_COMS = {'exec': 'singularity exec', 'mount': '-B'}
-    #  TODO: SUPPORT DOCKER
-    DOCKER_COMS = None
+
+    SINGULARITY_COMS = {
+        'exec':                         'singularity exec',
+        'mount':                        '-B'
+    }
+
+    # TODO: SUPPORT DOCKER
+    DOCKER_COMS = {
+        'exec':                         None,
+        'mount':                        None
+    }
 #end Commands
 
 def get_environment_path():

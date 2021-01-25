@@ -93,7 +93,7 @@ jobs:
         tar -czvf ${DOCKER_RELEASE} ./image
 
     - name: Upload Pipeline Package info
-      # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       uses: actions/upload-artifact@v2
       with:
         name: Requirements
