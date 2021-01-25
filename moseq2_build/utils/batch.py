@@ -5,7 +5,7 @@ import re
 from stat import S_IEXEC
 
 from moseq2_build.utils.mount import mount_dirs
-from moseq2_build.utils.constants import Commands, DEFAULT_FLIP_FILE
+from moseq2_build.utils.constants import Commands, get_classifier_path
 from moseq2_build.utils.extract import place_classifier_in_yaml
 from moseq2_build.utils.command import *
 
@@ -27,8 +27,10 @@ def batch(image, flip_path, batch_output, remainder, com_table):
         return
 
     # If the user passed in the --flip-file and the --config flags, tell them the config will not be overwritten
-    if ('-c' in remainder or '--config-file' in remainder) and flip_path != DEFAULT_FLIP_FILE:
-        sys.stderr.write('WARNING: Flip file and config file have been passed in. Ignoring the flip file so config file will NOT be overwitten.')
+    if '-c' in remainder or '--config-file' in remainder:
+        test = get_classifier_path() + '/' + os.path.basename(flip_path)
+        if flip_path != test:
+            sys.stderr.write('WARNING: Flip file and config file have been passed in. Ignoring the flip file so config file will NOT be overwitten.\n')
 
     config_file = ''
     if '-c' not in remainder and '--config-file' not in remainder and 'extract-batch' in remainder:
@@ -54,4 +56,18 @@ def batch(image, flip_path, batch_output, remainder, com_table):
 
     check_stderr(error)
     check_stdout(output)
+
+    if 'extract-batch' in remainder and 'slurm' in remainder:
+        out = output.decode('utf-8')
+        final_command = ''
+        for line in out.split('\n'):
+            commandList = re.findall(r'"([^"]*)', line)
+
+            if len(commandList) != 0:
+                com = commandList[0]
+                t = com_table["exec"] + ' ' + mount_com + ' ' + image + ' bash -c \'' + com
+                line = line.replace(com, t)
+                line = line[:-1] + "\'\";\n"
+                final_command += line
+            sys.stdout.write(final_command + '\n')
 #end batch()
