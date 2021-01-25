@@ -50,21 +50,4 @@ def batch(image, flip_path, batch_output, remainder, com_table):
 
     check_stderr(error)
     check_stdout(output)
-
-    if 'extract-batch' in remainder and 'slurm' in remainder:
-        out = output.decode('utf-8')
-        final_command = ''
-        with open('run_batch.sh', 'w') as f:
-            for line in out.split('\n'):
-                commandList = re.findall(r'"([^"]*)', line)
-
-                if len(commandList) != 0:
-                    com = commandList[0]
-                    t = com_table["exec"] + ' ' + mount_com + ' ' + image + ' bash -c \'' + com
-                    line = line.replace(com, t)
-                    line = line[:-1] + "\'\";\n"
-                    final_command += line
-            f.write(final_command + '\n')
-            outputPath = os.path.join(batch_output, 'run_batch.sh') # just in case we have been passed a location for batch script
-            os.chmod(outputPath, S_IEXEC | os.stat(outputPath).st_mode)
 #end batch()
