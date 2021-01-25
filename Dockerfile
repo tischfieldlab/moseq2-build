@@ -53,7 +53,8 @@ COPY flip_files/*.pkl /moseq2_data/flip_files/
 
 # Create the requirements.txt file
 RUN source activate moseq2 \
-    && pip freeze > /tmp/requirements.txt  \
+    && pip freeze > /tmp/pipfreeze.txt  \
+    && conda list > /tmp/condalist.txt
     && pwd && ls
 
 # Add env activation in bashrc file
