@@ -24,6 +24,8 @@ def mount_dirs(remainder, mount_string, com_table):
                     try:
                         if contents['flip_classifier'] and os.path.isfile(contents['flip_classifier']):
                             pathKeys.append(os.path.abspath(contents['flip_classifier']))
+                        if contents['output_dir'] and os.path.isfile(contents['output_dir']):
+                            pathKeys.append(os.path.abspath(contents['output_dir']))
                     except:
                         pass
 
