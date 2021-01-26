@@ -46,7 +46,7 @@ def batch_parser_func(args, unknown):
     assert (args.flip_path is not None)
     assert (args.batch_output is not None)
 
-    args.flip_path = get_classifier_path() + '/' + args.flip_path
+    args.flip_path = mount_flip_path(args.flip_path)
 
     file_commands = None
     if args.image.endswith('.sif'):
@@ -64,15 +64,23 @@ def extract_parser_func(args, remainder):
     assert (args.image is not None)
     assert (args.flip_path is not None)
 
-    file_commands = []
-    args.flip_path = get_classifier_path() + '/' + args.flip_path
+    args.flip_path = mount_flip_path(args.flip_path)
 
+    file_commands = None
     if (args.image.endswith('.sif')):
         sys.stderr.write('Detected Singularity image {} using environment {}\n'.format(os.path.basename(args.image), get_active_env()))
         file_commands = Commands.SINGULARITY_COMS
 
     extract(args.image, args.flip_path, remainder, file_commands)
 #end extract_parser_func()
+
+def mount_flip_path(flip_path):
+    if os.path.isfile(flip_path):
+        return flip_path
+    else:
+        # The / is hardcoded since all paths relative to the image use /
+        return get_classifier_path() + '/' + flip_path
+#end mount_flip_path()
 
 if __name__ == "__main__":
     main()
