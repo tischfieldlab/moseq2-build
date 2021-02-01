@@ -72,6 +72,7 @@ jobs:
         docker run moseq2 cat /tmp/pipfreeze.txt > /home/runner/work/moseq2-build/moseq2-build/pipfreeze.txt
         docker run moseq2 cat /tmp/condalist.txt > /home/runner/work/moseq2-build/moseq2-build/condalist.txt
         docker run moseq2 cat /tmp/aptpackages.txt > /home/runner/work/moseq2-build/moseq2-build/aptpackages.txt
+        docker run moseq2 cat /tmp/containerinfo.txt > /home/runner/work/moseq2-build/moseq2-build/containerinfo.txt
 
     - name: Convert Docker Image to Singularity Image
       run: |
