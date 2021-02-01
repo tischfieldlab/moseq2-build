@@ -1,6 +1,9 @@
 import os
+from os import path
 import sys
 import yaml
+
+from moseq2_build.utils.constants import get_classifier_path
 
 def mount_dirs(remainder, mount_string, com_table):
     pathKeys = []
@@ -29,15 +32,18 @@ def mount_dirs(remainder, mount_string, com_table):
                     except:
                         pass
 
-            pathKeys.append(os.path.abspath(remainder[idx]))
+            # Check if file exists on OS, if it does, add it to the mount command
+            if os.path.isfile(remainder[idx]) or os.path.isdir(remainder[idx]):
+                pathKeys.append(os.path.abspath(remainder[idx]))
 
-            if len(pathKeys) != 0:
-                longest_path = os.path.dirname(os.path.commonpath(pathKeys))
-
-                if longest_path == '\\' or longest_path == ' / ':
-                    sys.stderr.write('Common path is the root, so it will not be mounted.\n')
-                else:
-                    mount_com = mount_string + ' ' + longest_path
+    for i in range(len(pathKeys)):
+        if pathKeys[i] == os.path.abspath(os.sep):
+            sys.stderr.write('Mount string passed in is the root directory, so we are skipping mounting it.\n')
+            continue
+        if i == 0:
+            mount_com = mount_string + ' ' + pathKeys[i]
+        else:
+            mount_com += ',' + pathKeys[i]
 
     return mount_com
 #end mount_dirs()
