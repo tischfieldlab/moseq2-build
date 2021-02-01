@@ -3,7 +3,7 @@ name: Build Moseq2 Container
 on:
   repository_dispatch:
   push:
-    branches: [ master ]
+    # branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -68,6 +68,7 @@ jobs:
         docker build -t moseq2 --build-arg SERVICE_TOKEN=${{ secrets.SERVICE_ACCOUNT_TOKEN }} --build-arg GIT_NAME=${{ secrets.SERVICE_ACCOUNT }} ./moseq2-build/
         docker run moseq2 cat /tmp/pipfreeze.txt > /home/runner/work/moseq2-build/moseq2-build/pipfreeze.txt
         docker run moseq2 cat /tmp/condalist.txt > /home/runner/work/moseq2-build/moseq2-build/condalist.txt
+        docker run moseq2 cat /tmp/aptpackages.txt > /home/runner/work/moseq2-build/moseq2-build/aptpackages.txt
         ls
         ls ./moseq2-build
 
@@ -93,13 +94,14 @@ jobs:
         tar -czvf ${DOCKER_RELEASE} ./image
 
     - name: Upload Pipeline Package info
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       uses: actions/upload-artifact@v2
       with:
         name: Bulid Info
         path: |
           /home/runner/work/moseq2-build/moseq2-build/pipfreeze.txt
           /home/runner/work/moseq2-build/moseq2-build/condalist.txt
+          /home/runner/work/moseq2-build/moseq2-build/aptpackages.txt
 
     - name: Upload Docker Artifact
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}

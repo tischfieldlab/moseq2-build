@@ -55,6 +55,7 @@ COPY flip_files/*.pkl /moseq2_data/flip_files/
 RUN source activate moseq2 \
     && pip freeze > /tmp/pipfreeze.txt  \
     && conda list > /tmp/condalist.txt \
+    && apt list --installed > /tmp/aptpackages.txt \
     && pwd && ls
 
 # Add env activation in bashrc file
