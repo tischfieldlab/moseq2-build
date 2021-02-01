@@ -104,6 +104,7 @@ jobs:
           /home/runner/work/moseq2-build/moseq2-build/pipfreeze.txt
           /home/runner/work/moseq2-build/moseq2-build/condalist.txt
           /home/runner/work/moseq2-build/moseq2-build/aptpackages.txt
+          /home/runner/work/moseq2-build/moseq2-build/containerinfo.txt
 
     - name: Upload Docker Artifact
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
