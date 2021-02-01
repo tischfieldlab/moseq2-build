@@ -66,11 +66,12 @@ jobs:
         mkdir /tmp/image
         cp -r /home/runner/work/moseq2-build/moseq2-build/moseq2-build/moseq2_build/flip_classifiers/ ./moseq2-build/flip_files
         docker build -t moseq2 --build-arg SERVICE_TOKEN=${{ secrets.SERVICE_ACCOUNT_TOKEN }} --build-arg GIT_NAME=${{ secrets.SERVICE_ACCOUNT }} ./moseq2-build/
+
+    - name: Copy build info
+    - run: |
         docker run moseq2 cat /tmp/pipfreeze.txt > /home/runner/work/moseq2-build/moseq2-build/pipfreeze.txt
         docker run moseq2 cat /tmp/condalist.txt > /home/runner/work/moseq2-build/moseq2-build/condalist.txt
         docker run moseq2 cat /tmp/aptpackages.txt > /home/runner/work/moseq2-build/moseq2-build/aptpackages.txt
-        ls
-        ls ./moseq2-build
 
     - name: Convert Docker Image to Singularity Image
       run: |
