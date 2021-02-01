@@ -2,6 +2,7 @@ import os
 from os import path
 import sys
 import yaml
+import re
 
 from moseq2_build.utils.constants import get_classifier_path
 
@@ -36,8 +37,10 @@ def mount_dirs(remainder, mount_string, com_table):
             if os.path.isfile(remainder[idx]) or os.path.isdir(remainder[idx]):
                 pathKeys.append(os.path.abspath(remainder[idx]))
 
+    # Pattern for matching windows root folder
+    pattern = re.compile('^[a-zA-Z]:\\')
     for i in range(len(pathKeys)):
-        if pathKeys[i] == os.path.abspath(os.sep):
+        if pathKeys[i] == os.path.abspath(os.sep) or pattern.fullmatch(pathKeys[i]) == True:
             sys.stderr.write('Mount string passed in is the root directory, so we are skipping mounting it.\n')
             continue
         if i == 0:
