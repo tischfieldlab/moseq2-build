@@ -8,7 +8,6 @@ from moseq2_build.utils.constants import get_classifier_path
 
 def mount_dirs(remainder, mount_string, com_table):
     pathKeys = []
-    mount_com = ''
     if (len(remainder) == 0):
         return ''
 
@@ -37,8 +36,25 @@ def mount_dirs(remainder, mount_string, com_table):
             if os.path.isfile(remainder[idx]) or os.path.isdir(remainder[idx]):
                 pathKeys.append(os.path.abspath(remainder[idx]))
 
+    return compute_mount_com(pathKeys, mount_string)
+#end mount_dirs()
+
+def mount_additional_dirs(other_dirs, mount_string):
+    if other_dirs is None or len(other_dirs) == 0:
+        return ''
+    pathKeys = []
+    for p in other_dirs:
+        # Check if file exists on OS, if it does, add it to the mount command
+        if os.path.isfile(p) or os.path.isdir(p):
+            pathKeys.append(os.path.abspath(p))
+
+    return compute_mount_com(pathKeys, mount_string)
+#end mount_additional_dirs()
+
+def compute_mount_com(pathKeys, mount_string):
+    mount_com = ''
     # Pattern for matching windows root folder
-    pattern = re.compile('^[a-zA-Z]:\\')
+    pattern = re.compile(r'^[a-zA-Z]:\\')
     for i in range(len(pathKeys)):
         if pathKeys[i] == os.path.abspath(os.sep) or pattern.fullmatch(pathKeys[i]) == True:
             sys.stderr.write('Mount string passed in is the root directory, so we are skipping mounting it.\n')
@@ -49,4 +65,4 @@ def mount_dirs(remainder, mount_string, com_table):
             mount_com += ',' + pathKeys[i]
 
     return mount_com
-#end mount_dirs()
+#end compute_mount_com()

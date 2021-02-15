@@ -2,9 +2,9 @@ import subprocess
 
 from moseq2_build.utils.command import *
 from moseq2_build.utils.constants import *
-from moseq2_build.utils.mount import mount_dirs
+from moseq2_build.utils.mount import mount_additional_dirs, mount_dirs
 
-def extract(image, flip_path, remainder, command_table):
+def extract(image, flip_path, mount_dirs_list, remainder, command_table):
 
     # Field the help commands first.
     if '-h' in remainder or '--help' in remainder:
@@ -18,11 +18,12 @@ def extract(image, flip_path, remainder, command_table):
         check_stdout(output)
         return
 
+    mount_com = mount_additional_dirs(mount_dirs_list, command_table['mount']) + ' '
+
     # Figure out if we are running a command that needs to be mounted
-    mount_com = ''
     for v in remainder:
-        if v in Commands.BATCH_TABLE.keys():
-            mount_com = mount_dirs(remainder, command_table['mount'], Commands.BATCH_TABLE[v])
+        if v in Commands.EXTRACT_TABLE.keys():
+            mount_com += mount_dirs(remainder, command_table['mount'], Commands.EXTRACT_TABLE[v])
 
     bash_com = handle_entry_points(remainder)
 

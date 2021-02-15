@@ -4,12 +4,12 @@ import subprocess
 import re
 from stat import S_IEXEC
 
-from moseq2_build.utils.mount import mount_dirs
+from moseq2_build.utils.mount import *
 from moseq2_build.utils.constants import Commands, get_classifier_path
 from moseq2_build.utils.extract import place_classifier_in_yaml
 from moseq2_build.utils.command import *
 
-def batch(image, flip_path, batch_output, remainder, com_table):
+def batch(image, flip_path, batch_output, mount_dirs_list, remainder, com_table):
     # Field the help commands first.
     if '-h' in remainder or '--help' in remainder:
         bash_command = " bash -c 'source activate moseq2; moseq2-batch " + ' '.join(remainder) + ";'"
@@ -22,12 +22,12 @@ def batch(image, flip_path, batch_output, remainder, com_table):
         check_stdout(output)
         return
 
+    mount_com = mount_additional_dirs(mount_dirs_list, com_table['mount']) + ' '
+
     # Figure out if we are running a command that needs to be mounted
-    mount_com = ''
     for v in remainder:
         if v in Commands.BATCH_TABLE.keys():
-            mount_com = mount_dirs(remainder, com_table['mount'], 
-                Commands.BATCH_TABLE[v])
+            mount_com += mount_dirs(remainder, com_table['mount'], Commands.BATCH_TABLE[v])
 
     # Call into specific functions for each entry point to free up this funciton
     bash_command = ''
