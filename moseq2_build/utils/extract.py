@@ -1,4 +1,5 @@
 import subprocess
+import re
 
 from moseq2_build.utils.command import *
 from moseq2_build.utils.constants import *
@@ -24,6 +25,14 @@ def extract(image, flip_path, mount_dirs_list, remainder, command_table):
     for v in remainder:
         if v in Commands.EXTRACT_TABLE.keys():
             mount_com += mount_dirs(remainder, command_table['mount'], Commands.EXTRACT_TABLE[v])
+
+    temp_list = []
+    result = re.split(r'[,\s]+', mount_com)
+    [temp_list.append(x) for x in result if x not in temp_list]
+    if len(temp_list) > 2:
+        mount_com = command_table['mount'] + " " + ",".join(temp_list[1:])
+    else:
+        mount_com = command_table['mount'] + " " + "".join(temp_list[1:])
 
     bash_com = handle_entry_points(remainder)
 

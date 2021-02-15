@@ -29,6 +29,14 @@ def batch(image, flip_path, batch_output, mount_dirs_list, remainder, com_table)
         if v in Commands.BATCH_TABLE.keys():
             mount_com += mount_dirs(remainder, com_table['mount'], Commands.BATCH_TABLE[v])
 
+    temp_list = []
+    result = re.split(r'[,\s]+', mount_com)
+    [temp_list.append(x) for x in result if x not in temp_list]
+    if len(temp_list) > 2:
+        mount_com = com_table['mount'] + " " + ",".join(temp_list[1:])
+    else:
+        mount_com = com_table['mount'] + " " + "".join(temp_list[1:])
+
     # Call into specific functions for each entry point to free up this funciton
     bash_command = ''
     if 'extract-batch' in remainder:

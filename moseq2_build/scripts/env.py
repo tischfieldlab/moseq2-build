@@ -1,4 +1,5 @@
 import argparse
+from os import path
 import sys
 import tabulate
 import shutil
@@ -68,6 +69,16 @@ def main():
     flip_file_parser = env_subparsers.add_parser('list-classifiers')
     flip_file_parser.set_defaults(function=list_classifiers_func)
 
+    # Add custom binds to env file
+    add_custom_binds_parser = env_subparsers.add_parser('add-bind-path', help='Use this to add common bind paths to your environment file so that you no longer need to type them.')
+    add_custom_binds_parser.add_argument('paths', nargs='+', help='List of directories to add to the env file.', type=str)
+    add_custom_binds_parser.set_defaults(function=add_custom_binds_func)
+
+    # Add custom binds to env file
+    del_custom_binds_parser = env_subparsers.add_parser('del-bind-path', help='Use this to add common bind paths to your environment file so that you no longer need to type them.')
+    del_custom_binds_parser.add_argument('paths', nargs='+', help='List of directories to add to the env file.', type=str)
+    del_custom_binds_parser.set_defaults(function=del_custom_binds_func)
+
     args = parser.parse_args()
     try:
         args.function(args)
@@ -91,7 +102,7 @@ def create_env_func(args):
         os.mkdir(os.path.join(get_environment_path(), args.name))
         f_path = os.path.join(get_environment_path(), args.name, args.name + '.yml')
         with open(f_path, 'w') as f:
-            cons = {"GITHUB_PAT": None, "IMAGE_PATHS": None, "ACTIVE_IMAGE": None}
+            cons = {"GITHUB_PAT": None, "IMAGE_PATHS": None, "ACTIVE_IMAGE": None, "CUSTOM_BIND_PATHS": []}
             yaml.dump(cons, f)
         sys.stderr.write('Environment config created at {}.\n'.format(f_path))
 
@@ -200,6 +211,24 @@ def list_images_parser_func(args):
     sys.stderr.write('Active image: \n')
     sys.stderr.write(get_active_image() + '\n')
 #end list_images_parser_func()
+
+def add_custom_binds_func(args):
+    paths = []
+    for p in args.paths:
+        p = os.path.abspath(p)
+        paths.append(p)
+
+    add_custom_bind_paths(paths)
+#end custom_binds_func()
+
+def del_custom_binds_func(args):
+    paths = []
+    for p in args.paths:
+        p = os.path.abspath(p)
+        paths.append(p)
+
+    remove_custom_bind_paths(paths)
+#end del_binds_func()
 
 if __name__ == '__main__':
     main()

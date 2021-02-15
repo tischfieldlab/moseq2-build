@@ -102,6 +102,65 @@ def get_all_classifiers():
     return flips
 #end get_all_classifiers()
 
+def get_custom_bind_paths():
+    env = get_active_env()
+    env_path = os.path.join(get_environment_path(), env, env + '.yml')
+    with open(env_path, 'r') as f:
+        contents = yaml.load(f, Loader=yaml.SafeLoader)
+
+    paths = contents['CUSTOM_BIND_PATHS']
+
+    if paths == None or len(paths) == 0:
+        return []
+
+    return paths
+#end get_custom_bind_paths()
+
+def add_custom_bind_paths(paths):
+    env = get_active_env()
+    env_path = os.path.join(get_environment_path(), env, env + '.yml')
+    with open(env_path, 'r') as f:
+        contents = yaml.load(f, Loader=yaml.SafeLoader)
+
+    old_paths = contents['CUSTOM_BIND_PATHS']
+    if old_paths == None:
+        old_paths = paths
+
+    else:
+        for p in paths:
+            if p in old_paths:
+                sys.stderr.write('Skipping adding {} as it already exists in the env file.\n'.format(p))
+                continue
+            else:
+                old_paths.append(p)
+                sys.stderr.write('Successfully added {} into the env file.\n'.format(p))
+
+    contents['CUSTOM_BIND_PATHS'] = old_paths
+
+    with open(env_path, 'w') as f:
+        yaml.dump(contents, f)
+#end add_custom_bind_paths()
+
+def remove_custom_bind_paths(paths):
+    env = get_active_env()
+    env_path = os.path.join(get_environment_path(), env, env + '.yml')
+    with open(env_path, 'r') as f:
+        contents = yaml.load(f, Loader=yaml.SafeLoader)
+
+    old_paths = contents['CUSTOM_BIND_PATHS']
+    for p in paths:
+        if p in old_paths:
+            old_paths.remove(p)
+            sys.stderr.write('Successfully deleted {} from the env file.\n'.format(p))
+        else:
+            sys.stderr.write('{} is not in the env file, so it was not deleted.\n'.format(p))
+
+    contents['CUSTOM_BIND_PATHS'] = old_paths
+
+    with open(env_path, 'w') as f:
+        yaml.dump(contents, f)
+#end remove_custom_bind_paths()
+
 class Found(Exception): pass
 def get_image_paths(env, image):
     contents = os.path.join(get_environment_path(), env)
