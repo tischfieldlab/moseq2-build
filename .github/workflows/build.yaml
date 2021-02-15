@@ -73,8 +73,8 @@ jobs:
         docker run moseq2 cat /tmp/condalist.txt > /home/runner/work/moseq2-build/moseq2-build/condalist.txt
         docker run moseq2 cat /tmp/aptpackages.txt > /home/runner/work/moseq2-build/moseq2-build/aptpackages.txt
         docker run moseq2 cat /tmp/containerinfo.txt > /home/runner/work/moseq2-build/moseq2-build/containerinfo.txt
-        docker run moseq2 cat /tmp/dockerversion.txt > /home/runner/work/moseq2-build/moseq2-build/dockerversion.txt
-        docker run moseq2 cat /tmp/singularityversion.txt > /home/runner/work/moseq2-build/moseq2-build/singularityversion.txt
+        docker -v > /home/runner/work/moseq2-build/moseq2-build/dockerversion.txt
+        singularity version > /home/runner/work/moseq2-build/moseq2-build/singularityversion.txt
 
     - name: Convert Docker Image to Singularity Image
       run: |
