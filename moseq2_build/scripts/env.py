@@ -16,7 +16,7 @@ def main():
     env_subparsers = parser.add_subparsers()
 
     # Create environment parser
-    create_env_parser = env_subparsers.add_parser('create-env')
+    create_env_parser = env_subparsers.add_parser('create-env', help='Create a new environment and entry in the global manifest table.')
     create_env_parser.add_argument('-n', '--name', type=str, help='The name of the environment that is to be created.',
                                    default=None, required=True)
     create_env_parser.add_argument('--set-active-env', action='store_true', help='Set the new environment to be the active one.')
@@ -25,27 +25,31 @@ def main():
     create_env_parser.set_defaults(function=create_env_func)
 
     # Delete environment parser
-    delete_env_parser = env_subparsers.add_parser('delete-env')
+    delete_env_parser = env_subparsers.add_parser('delete-env', help='Delete the environment from the global manifest table.')
     delete_env_parser.add_argument('-n', '--name', type=str, default=None, required=True, help='Name of the environment to delete.')
     delete_env_parser.set_defaults(function=delete_env_func)
 
+    # Current env parser
+    curr_env_parser = env_subparsers.add_parser('cur-env', help='Lists the currently active environment.')
+    curr_env_parser.set_defaults(function=curr_env_func)
+
     # List environment parser
-    list_env_parser = env_subparsers.add_parser('list-env')
+    list_env_parser = env_subparsers.add_parser('list-env', help='List all of the environments on this computer.')
     list_env_parser.add_argument('-a', '--active-only', action='store_true', help='Return back the active environment only.')
     list_env_parser.set_defaults(function=list_env_func)
 
     # Activate environment parser
-    activate_env_parser = env_subparsers.add_parser('use-env')
+    activate_env_parser = env_subparsers.add_parser('use-env', help='Activate an environment and load all of its configured values.')
     activate_env_parser.add_argument('-n', '--name', type=str, default=None, required=True, help='Name of the environment to be active.')
     activate_env_parser.set_defaults(function=activate_env_func)
 
     # Deactivate environment parser
-    deactivate_env_parser = env_subparsers.add_parser('deactivate-env')
+    deactivate_env_parser = env_subparsers.add_parser('deactivate-env', help='Deactivates the current image.')
     deactivate_env_parser.add_argument('-n', '--name', type=str, default=None, required=True, help='Name of the environment to be active.')
     deactivate_env_parser.set_defaults(function=deactivate_env_func)
 
     # Activate image
-    activate_image_parser = env_subparsers.add_parser('use-image')
+    activate_image_parser = env_subparsers.add_parser('use-image', help='Activate an image downloaded for the environment.')
     activate_image_parser.add_argument('-n', '--name', type=str, default=None, required=True,
         help='The name of the environment to activate the image of.')
     activate_image_parser.add_argument('-i', '--image', type=str, default=None,
@@ -53,7 +57,7 @@ def main():
     activate_image_parser.set_defaults(function=activate_image_func)
 
     # Download image
-    download_image_parser = env_subparsers.add_parser('download-image')
+    download_image_parser = env_subparsers.add_parser('download-image', help='Download a new image for the current environment.')
     download_image_parser.add_argument('-n', '--name', type=str, default=None, required=True,
         help='The name of the environment to activate the image of.')
     download_image_parser.add_argument('-i', '--image', type=str, default=None,
@@ -62,11 +66,11 @@ def main():
     download_image_parser.set_defaults(function=download_image_func)
 
     # Get active image
-    list_images_parser = env_subparsers.add_parser('list-image')
+    list_images_parser = env_subparsers.add_parser('list-image', help='List all of the images available for this environment.')
     list_images_parser.set_defaults(function=list_images_parser_func)
 
      # List available flip files
-    flip_file_parser = env_subparsers.add_parser('list-classifiers')
+    flip_file_parser = env_subparsers.add_parser('list-classifiers', help='List all of the classifiers available within the images.')
     flip_file_parser.set_defaults(function=list_classifiers_func)
 
     # Add custom binds to env file
@@ -75,7 +79,7 @@ def main():
     add_custom_binds_parser.set_defaults(function=add_custom_binds_func)
 
     # Add custom binds to env file
-    del_custom_binds_parser = env_subparsers.add_parser('del-bind-path', help='Use this to add common bind paths to your environment file so that you no longer need to type them.')
+    del_custom_binds_parser = env_subparsers.add_parser('del-bind-path', help='Use this to delete common bind paths to your environment file.')
     del_custom_binds_parser.add_argument('paths', nargs='+', help='List of directories to add to the env file.', type=str)
     del_custom_binds_parser.set_defaults(function=del_custom_binds_func)
 
@@ -131,6 +135,10 @@ def delete_env_func(args):
         shutil.rmtree(os.path.join(get_environment_path(), args.name))
         sys.stderr.write('The "{}" environment has successfully been removed.\n'.format(args.name))
 #end delete_env_func()
+
+def curr_env_func(args):
+    print('Currently active image is: {}'.format(get_active_env()))
+#end curr_env_func()
 
 def list_env_func(args):
     assert (args.active_only is not None)

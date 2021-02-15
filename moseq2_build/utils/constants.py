@@ -64,7 +64,7 @@ def get_active_env():
                 env_name = row[0]
 
     if len(env_name) == 0:
-        sys.stderr.write('There is no active environment, please activate one.\n')
+        sys.stderr.write('There is no active environment, please activate one by typing moseq2-env use-env --help.\n')
         exit(1)
 
     return env_name
@@ -80,7 +80,7 @@ def get_active_image():
     img = contents['ACTIVE_IMAGE']
 
     if img == None:
-        sys.stderr.write('There is no active image. Please activate one before proceeding.\n')
+        sys.stderr.write('There is no active image. Please activate one before proceeding by typing moseq2-env use-env --help.\n')
         exit(1)
 
     return img
