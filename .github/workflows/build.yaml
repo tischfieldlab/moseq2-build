@@ -3,7 +3,7 @@ name: Build Moseq2 Container
 on:
   repository_dispatch:
   push:
-    branches: [ master ]
+    # branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -73,6 +73,8 @@ jobs:
         docker run moseq2 cat /tmp/condalist.txt > /home/runner/work/moseq2-build/moseq2-build/condalist.txt
         docker run moseq2 cat /tmp/aptpackages.txt > /home/runner/work/moseq2-build/moseq2-build/aptpackages.txt
         docker run moseq2 cat /tmp/containerinfo.txt > /home/runner/work/moseq2-build/moseq2-build/containerinfo.txt
+        docker run moseq2 cat /tmp/dockerversion.txt > /home/runner/work/moseq2-build/moseq2-build/dockerversion.txt
+        docker run moseq2 cat /tmp/singularityversion.txt > /home/runner/work/moseq2-build/moseq2-build/singularityversion.txt
 
     - name: Convert Docker Image to Singularity Image
       run: |
@@ -105,6 +107,8 @@ jobs:
           /home/runner/work/moseq2-build/moseq2-build/condalist.txt
           /home/runner/work/moseq2-build/moseq2-build/aptpackages.txt
           /home/runner/work/moseq2-build/moseq2-build/containerinfo.txt
+          /home/runner/work/moseq2-build/moseq2-build/dockerversion.txt
+          /home/runner/work/moseq2-build/moseq2-build/singularityversion.txt
 
     - name: Upload Docker Artifact
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}

@@ -57,6 +57,8 @@ RUN source activate moseq2 \
     && conda list > /tmp/condalist.txt \
     && apt list --installed > /tmp/aptpackages.txt \
     && cat /etc/os-release > /tmp/containerinfo.txt \
+    && docker -v > /tmp/dockerversion.txt \
+    && singularity version > /tmp/singularityversion.txt \
     && pwd && ls
 
 # Add env activation in bashrc file
