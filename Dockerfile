@@ -56,6 +56,7 @@ COPY argtable.py /tmp/
 
 # Run the script to generate the argtables
 RUN source activate moseq2 \
+    && python -m pip install -U scikit-image \
     && python /tmp/argtable.py --output-file /moseq2_data/argtable.yaml \
     && cat /moseq2_data/argtable.yaml \
     && rm /tmp/argtable.py
