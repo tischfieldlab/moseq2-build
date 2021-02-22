@@ -51,12 +51,23 @@ RUN source activate moseq2 \
 # Copy the classifiers
 COPY flip_files/*.pkl /moseq2_data/flip_files/
 
+# Copy the argtable.py file in the image to run
+COPY argtable.py /tmp/
+
+# Run the script to generate the argtables
+RUN source activate moseq2 \
+    && python /tmp/argtable.py --output-file /moseq2_data/argtable.yaml \
+    && cat /moseq2_data/argtable.yaml \
+    && rm /tmp/argtable.py
+
 # Create the requirements.txt file
 RUN source activate moseq2 \
     && pip freeze > /tmp/pipfreeze.txt  \
     && conda list > /tmp/condalist.txt \
     && apt list --installed > /tmp/aptpackages.txt \
     && cat /etc/os-release > /tmp/containerinfo.txt \
+    && docker -v > /tmp/dockerversion.txt \
+    && singularity version > /tmp/singularityversion.txt \
     && pwd && ls
 
 # Add env activation in bashrc file
