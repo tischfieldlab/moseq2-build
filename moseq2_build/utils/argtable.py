@@ -4,7 +4,6 @@ import os
 
 from pathlib import Path
 
-from moseq2_build.utils.constants import get_environment_path
 from moseq2_extract import cli as extract_cli
 from moseq2_batch import cli as batch_cli
 from moseq2_pca import cli as pca_cli
