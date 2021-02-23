@@ -56,7 +56,7 @@ COPY argtable.py /tmp/
 
 # Run the script to generate the argtables
 RUN source activate moseq2 \
-    && conda install scikit-image \
+    && conda install -c conda-forge tifffile \
     && python /tmp/argtable.py --output-file /moseq2_data/argtable.yaml \
     && cat /moseq2_data/argtable.yaml \
     && rm /tmp/argtable.py
