@@ -38,7 +38,7 @@ RUN source ~/.bashrc \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-viz.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git \
     # NOTE: THIS IS A HACK!!! LATEST VERSION OF SCIKIT DOES NOT WORK
-    && pip install "scikit-image==0.14.2" "scikit-learn=0.19.0" "scipy==1.2.3"
+    && pip install "scikit-image==0.14.2" "scikit-learn==0.19.0" "scipy==1.2.3"
 
 # Run tests to make sure all repos work
 RUN source activate moseq2 \
@@ -72,6 +72,11 @@ RUN source activate moseq2 \
 
 # Add env activation in bashrc file
 RUN echo 'source activate moseq2' >> ~/.bashrc
+
+# Set up the new user
+RUN useradd -ms /bin/bash tischfieldlab
+USER tischfieldlab
+WORKDIR /home/tischfieldlab
 
 # Initialize the shell for conda and activate moseq2 on startupa
 SHELL ["conda", "run", "-n", "moseq2", "/bin/bash", "-c"]
