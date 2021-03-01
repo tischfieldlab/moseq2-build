@@ -26,8 +26,6 @@ RUN source ~/.bashrc \
     && conda create -n moseq2 python=3.6 -y \
     && conda activate moseq2 \
     && conda install -c conda-forge ffmpeg \
-    && conda install --yes -c conda-forge scikit-image \
-    # NOTE: THIS IS A HACK!!! LATEST VERSION OF SCIKIT DOES NOT WORK
     && pip install requests future cython "pytest>=3.6" pytest-cov codecov \
     && pip install git+https://github.com/tischfieldlab/pyhsmm.git \
     && pip install git+https://github.com/tischfieldlab/pyhsmm-autoregressive.git \
@@ -38,7 +36,9 @@ RUN source ~/.bashrc \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-model.git --no-deps \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-batch.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-viz.git \
-    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git
+    && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git \
+    # NOTE: THIS IS A HACK!!! LATEST VERSION OF SCIKIT DOES NOT WORK
+    && pip install "scikit-image==0.14.2" "scikit-learn=0.19.0" "scipy==1.2.3"
 
 # Run tests to make sure all repos work
 RUN source activate moseq2 \
@@ -56,8 +56,6 @@ COPY argtable.py /tmp/
 
 # Run the script to generate the argtables
 RUN source activate moseq2 \
-    && apt install python-skimage -y \
-    && conda install -c conda-forge tifffile \
     && python /tmp/argtable.py --output-file /moseq2_data/argtable.yaml \
     && cat /moseq2_data/argtable.yaml \
     && rm /tmp/argtable.py
