@@ -64,9 +64,8 @@ RUN source activate moseq2 \
 RUN source activate moseq2 \
     && pip freeze > /tmp/pipfreeze.txt  \
     && conda list > /tmp/condalist.txt \
-    # && apt list --installed > /tmp/aptpackages.txt \
+    && apt list --installed > /tmp/aptpackages.txt \
     && cat /etc/os-release > /tmp/containerinfo.txt \
-    && docker -v > /tmp/dockerversion.txt \
     && singularity version > /tmp/singularityversion.txt \
     && pwd && ls
 
