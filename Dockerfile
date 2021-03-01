@@ -64,7 +64,7 @@ RUN source activate moseq2 \
 RUN source activate moseq2 \
     && pip freeze > /tmp/pipfreeze.txt  \
     && conda list > /tmp/condalist.txt \
-    && apt list --installed > /tmp/aptpackages.txt \
+    # && apt list --installed > /tmp/aptpackages.txt \
     && cat /etc/os-release > /tmp/containerinfo.txt \
     && docker -v > /tmp/dockerversion.txt \
     && singularity version > /tmp/singularityversion.txt \
@@ -74,9 +74,9 @@ RUN source activate moseq2 \
 RUN echo 'source activate moseq2' >> ~/.bashrc
 
 # # Set up the new user
-# RUN useradd -ms /bin/bash tischfieldlab
-# USER tischfieldlab
-# WORKDIR /home/tischfieldlab
+RUN useradd -ms /bin/bash tischfieldlab
+USER tischfieldlab
+WORKDIR /home/tischfieldlab
 
 # Initialize the shell for conda and activate moseq2 on startupa
 SHELL ["conda", "run", "-n", "moseq2", "/bin/bash", "-c"]
