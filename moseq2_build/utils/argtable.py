@@ -8,6 +8,7 @@ from moseq2_extract import cli as extract_cli
 from moseq2_batch import cli as batch_cli
 from moseq2_pca import cli as pca_cli
 from moseq2_viz import cli as viz_cli
+from moseq2_model import cli as model_cli
 
 def create_table(command_list):
     res = {}

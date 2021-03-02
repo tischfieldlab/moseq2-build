@@ -1,33 +1,18 @@
 import os
 import sys
 import csv
+import subprocess
 import yaml
+from io import StringIO
 
 from pathlib import Path
 
 GITHUB_LINK = "@api.github.com/repos/tischfieldlab/moseq2-build/releases"
 DEFAULT_FLIP_FILE = 'flip_classifier_k2_c57_10to13weeks.pkl'
 IMAGE_FLIP_PATH = '/moseq2_data/flip_files'
+ARG_TABLE = '/moseq2_data/argtable.yaml'
 
 class Commands:
-    BATCH_TABLE = {
-        'extract-batch':                ['--input-dir', '-i', '--config-file', '-c', '--filename'],
-        'aggregate-extract-results':    ['-i', '--input-dir', '-o', '--output-dir'],
-        'aggregate-modeling-results':   ['-i', '--input-dir', '-d', '--dest-file'],
-        'convert-raw-to-avi':           ['-i', '--input-dir'],
-        'gen-grid-search-config':       ['-o', '--output-dir', '-n', '--name'],
-        'learn-model-parameter-scan':   ['--output-dir', '--input-file', '--log-path']
-    }
-
-    EXTRACT_TABLE = {
-        'generate-config':              ['-o', '--output-file'],
-        'extract':                      ['--config-file', '--flip-classifier', '--output-dir'],
-        'convert-raw-to-avi':           ['-o', '--output-file'],
-        'copy-slice':                   ['-o', '--output-file'],
-        'download-flip-file':           ['--output-dir'],
-        'find-roi':                     ['--output-dir', '--config-file']
-    }
-
     SINGULARITY_COMS = {
         'exec':                         'singularity exec',
         'mount':                        '-B'
@@ -39,6 +24,22 @@ class Commands:
         'mount':                        None
     }
 #end Commands
+
+def get_argtable(com_table, image):
+    final_command = com_table['exec'] + ' ' + image + ' ' + 'cat ' + ARG_TABLE
+    process = subprocess.Popen(final_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output, error = process.communicate()
+
+    if len(error) != 0:
+        sys.stderr.write('Could not open argtable. Got the following error: {}\n'.format(error.decode('utf-8')))
+        sys.stderr.write('Please be sure that you have downloaded the latest image.\n')
+        exit(-1)
+
+    with StringIO(output.decode('utf-8')) as f:
+        conts = yaml.load(f, yaml.FullLoader)
+
+    return conts
+#end get_argtable()
 
 def get_environment_path():
     return os.path.join(str(Path.home()), ".config", "moseq2_environment")

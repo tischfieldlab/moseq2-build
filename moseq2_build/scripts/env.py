@@ -113,7 +113,7 @@ def create_env_func(args):
 
         if args.download_image:
             download_args = Namespace(name=args.name, image=args.download_image,
-                set_active=args.set_active_image)
+                set_active=args.set_active_image, version=None)
             try:
                 download_image_func(download_args)
             except:

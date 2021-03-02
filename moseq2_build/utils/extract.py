@@ -5,7 +5,7 @@ from moseq2_build.utils.command import *
 from moseq2_build.utils.constants import *
 from moseq2_build.utils.mount import mount_additional_dirs, mount_dirs
 
-def extract(image, flip_path, mount_dirs_list, remainder, command_table):
+def extract(image, flip_path, mount_dirs_list, remainder, command_table, argtable):
 
     # Field the help commands first.
     if '-h' in remainder or '--help' in remainder:
@@ -23,16 +23,8 @@ def extract(image, flip_path, mount_dirs_list, remainder, command_table):
 
     # Figure out if we are running a command that needs to be mounted
     for v in remainder:
-        if v in Commands.EXTRACT_TABLE.keys():
-            mount_com += mount_dirs(remainder, command_table['mount'], Commands.EXTRACT_TABLE[v])
-
-    temp_list = []
-    result = re.split(r'[,\s]+', mount_com)
-    [temp_list.append(x) for x in result if x not in temp_list]
-    if len(temp_list) > 2:
-        mount_com = command_table['mount'] + " " + ",".join(temp_list[1:])
-    else:
-        mount_com = command_table['mount'] + " " + "".join(temp_list[1:])
+        if v in argtable.keys():
+            mount_com += mount_dirs(remainder, command_table['mount'], argtable[v])
 
     bash_com = handle_entry_points(remainder)
 

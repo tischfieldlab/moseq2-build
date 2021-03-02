@@ -55,12 +55,12 @@ def batch_parser_func(args, unknown):
     if args.image.endswith('.sif'):
         sys.stderr.write('Detected Singularity image {} using environment {}\n'.format(os.path.basename(args.image), get_active_env()))
         file_commands = Commands.SINGULARITY_COMS
-
+        table = get_argtable(Commands.SINGULARITY_COMS, args.image)
     else:
         sys.stderr.write('Docker not supported at the moment...')
         exit(1)
 
-    batch(args.image, args.flip_path, args.batch_output, args.mount_dir, unknown, file_commands)
+    batch(args.image, args.flip_path, args.batch_output, args.mount_dir, unknown, file_commands, table)
 #end batch_parser_func()
 
 def extract_parser_func(args, remainder):
@@ -73,8 +73,13 @@ def extract_parser_func(args, remainder):
     if (args.image.endswith('.sif')):
         sys.stderr.write('Detected Singularity image {} using environment {}\n'.format(os.path.basename(args.image), get_active_env()))
         file_commands = Commands.SINGULARITY_COMS
+        table = get_argtable(Commands.SINGULARITY_COMS, args.image)
+    else:
+        sys.stderr.write('Docker not supported at the moment...')
+        exit(1)
+    # print(table)
 
-    extract(args.image, args.flip_path, args.mount_dir, remainder, file_commands)
+    extract(args.image, args.flip_path, args.mount_dir, remainder, file_commands, table)
 #end extract_parser_func()
 
 def mount_flip_path(flip_path):

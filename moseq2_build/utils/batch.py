@@ -9,7 +9,7 @@ from moseq2_build.utils.constants import Commands, get_classifier_path
 from moseq2_build.utils.extract import place_classifier_in_yaml
 from moseq2_build.utils.command import *
 
-def batch(image, flip_path, batch_output, mount_dirs_list, remainder, com_table):
+def batch(image, flip_path, batch_output, mount_dirs_list, remainder, com_table, argtable):
     # Field the help commands first.
     if '-h' in remainder or '--help' in remainder:
         bash_command = " bash -c 'source activate moseq2; moseq2-batch " + ' '.join(remainder) + ";'"
@@ -26,16 +26,8 @@ def batch(image, flip_path, batch_output, mount_dirs_list, remainder, com_table)
 
     # Figure out if we are running a command that needs to be mounted
     for v in remainder:
-        if v in Commands.BATCH_TABLE.keys():
-            mount_com += mount_dirs(remainder, com_table['mount'], Commands.BATCH_TABLE[v])
-
-    temp_list = []
-    result = re.split(r'[,\s]+', mount_com)
-    [temp_list.append(x) for x in result if x not in temp_list]
-    if len(temp_list) > 2:
-        mount_com = com_table['mount'] + " " + ",".join(temp_list[1:])
-    else:
-        mount_com = com_table['mount'] + " " + "".join(temp_list[1:])
+        if v in argtable.keys():
+            mount_com += mount_dirs(remainder, com_table['mount'], argtable[v])
 
     # Call into specific functions for each entry point to free up this funciton
     bash_command = ''
