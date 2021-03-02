@@ -62,6 +62,7 @@ def main():
         help='The name of the environment to activate the image of.')
     download_image_parser.add_argument('-i', '--image', type=str, default=None,
         choices=['singularity', 'docker', 'all'], required=True, help='The image to be downloaded.')
+    download_image_parser.add_argument('-v', '--version', type=str, required=False, default=None, help='Specify the tag number for the version to get.')
     download_image_parser.add_argument('--set-active', action='store_true', help='Sets the image to active.')
     download_image_parser.set_defaults(function=download_image_func)
 
@@ -202,7 +203,7 @@ def download_image_func(args):
     else:
         images = [args.image]
 
-    image_paths = download_images(images, args.name)
+    image_paths = download_images(images, args.name, args.version)
     assert (len(image_paths) == len(images))
 
     for image in images:

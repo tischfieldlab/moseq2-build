@@ -19,7 +19,7 @@ def add_images_to_environment(image_paths, env):
         yaml.dump({'images': paths})
 #end add_images_to_environment()
 
-def download_images(images, env):
+def download_images(images, env, version):
     assert (len(images) != 0)
 
     p = os.path.join(get_environment_path(), env, env + '.yml')
@@ -35,7 +35,10 @@ def download_images(images, env):
             pat = data['GITHUB_PAT']
 
     url = "https://" + pat + ':' + GITHUB_LINK
-    x = requests.get(url + '/latest')
+    if version:
+        x = requests.get(url + '/tags/v' + version)
+    else:
+        x = requests.get(url + '/latest')
 
     if x.status_code != 200:
         sys.stderr.write('Failed to get release info.\n')
