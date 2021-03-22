@@ -66,8 +66,16 @@ def main():
     download_image_parser.add_argument('--set-active', action='store_true', help='Sets the image to active.')
     download_image_parser.set_defaults(function=download_image_func)
 
+    # Add image manually
+    add_custom_image_parser = env_subparsers.add_parser('add-image', help='Add an image to use to the environment. THIS WILL COPY TO THE DIRECTORY STRUCTURE OF THE ENVIRONMENT.')
+    add_custom_image_parser.add_argument('image', type=str, help='Path to the image file.')
+    add_custom_image_parser.add_argument('-e', '--env', default=get_active_env(), help='Environment to add the image to.')
+    add_custom_image_parser.add_argument('-a', '--activate', action='store_true', default=False, help='Activate the image passed in.')
+    add_custom_image_parser.set_defaults(function=add_custom_image)
+
     # Get active image
     list_images_parser = env_subparsers.add_parser('list-image', help='List all of the images available for this environment.')
+    list_images_parser.add_argument('-e', '--env', type=str, default=get_active_env(), help='Environment to get the images for.')
     list_images_parser.set_defaults(function=list_images_parser_func)
 
      # List available flip files
@@ -183,6 +191,30 @@ def list_classifiers_func(args):
         sys.stderr.write('{}\n'.format(f))
 #end list_classifiers_func()
 
+def add_custom_image(args):
+    image = os.path.abspath(args.image)
+    env = args.env
+    env_path = os.path.join(get_environment_path(), env)
+
+    # If we are passing in a singularity image
+    if str.endswith(image, 'sif'):
+        root_dir = os.path.splitext(os.path.split(image)[-1])[0]
+        final_dir = os.path.join(env_path, root_dir)
+        try:
+            os.mkdir(final_dir)
+        except:
+            sys.stderr.write('Error: Image already exists in the environment. Operation aborted.\n')
+            return
+        sys.stderr.write('Copying {} to {}.\n'.format(image, env_path))
+        shutil.copy(image, final_dir)
+        add_custom_image_in_environment(env, final_dir + '.sif', 'singularity')
+        if args.activate:
+            set_custom_active_image(env, final_dir + '.sif')
+
+    else:
+        add_custom_image_in_environment(env, env_path, 'docker')
+#end add_custom_image()
+
 def activate_image_func(args):
     assert (args.name is not None)
     assert (args.image is not None)
@@ -217,8 +249,22 @@ def download_image_func(args):
 #end download_image_func()
 
 def list_images_parser_func(args):
-    sys.stderr.write('Active image: \n')
-    sys.stderr.write(get_active_image() + '\n')
+    active_image = get_active_image()
+
+    env_path = os.path.join(get_environment_path(), args.env, args.env + '.yml')
+
+    with open(env_path, 'r') as f:
+        contents = yaml.load(f, Loader=yaml.SafeLoader)
+
+    image_paths = contents["IMAGE_PATHS"]
+
+    for k in image_paths:
+        sys.stderr.write('{}: \n'.format(k))
+        for p in image_paths[k]:
+            if p == active_image:
+                sys.stderr.write('[ACTIVE] - {}\n'.format(p))
+            else:
+                sys.stderr.write('\t - {}\n'.format(p))
 #end list_images_parser_func()
 
 def add_custom_binds_func(args):

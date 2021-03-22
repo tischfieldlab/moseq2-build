@@ -8,17 +8,6 @@ import getpass
 
 from moseq2_build.utils.constants import *
 
-def add_images_to_environment(image_paths, env):
-    env_path = os.path.join(get_environment_path(), env, env + '.yml')
-
-    paths = []
-    for image in image_paths:
-        paths.append(image)
-
-    with open(env_path, 'w+') as f:
-        yaml.dump({'images': paths})
-#end add_images_to_environment()
-
 def download_images(images, env, version):
     assert (len(images) != 0)
 
@@ -87,9 +76,26 @@ def download_images(images, env, version):
     return result
 #end download_images()
 
+def add_custom_image_in_environment(env, image, image_type):
+    env_path = os.path.join(get_environment_path(), env, env + '.yml')
+
+    with open(env_path, 'r') as f:
+        contents = yaml.load(f, Loader=yaml.SafeLoader)
+
+    if contents['IMAGE_PATHS'] is None:
+        contents['IMAGE_PATHS'] = {image_type: [image]}
+    else:
+        if not image in contents['IMAGE_PATHS'][image_type]:
+            contents['IMAGE_PATHS'][image_type].append(image)
+
+    with open(env_path, 'w+') as f:
+        yaml.dump(contents, f)
+#end add_custom_image_in_environment()
+
 def insert_image_in_environment(env, image):
-    if is_image_in_environment(env, image):
-        return
+    # if is_image_in_environment(env, image):
+        # sys.stderr.write('Error: Image already exists in the environment.')
+        # return
 
     env_path = os.path.join(get_environment_path(), env, env + '.yml')
     image_path = get_image_paths(env, image)
@@ -107,6 +113,16 @@ def insert_image_in_environment(env, image):
         yaml.dump(contents, f)
 #end insert_image_in_environment()
 
+def set_custom_active_image(env, image):
+    env_path = os.path.join(get_environment_path(), env, env + '.yml')
+    with open(env_path, 'r') as f:
+        contents = yaml.load(f, Loader=yaml.SafeLoader)
+
+    contents['ACTIVE_IMAGE'] = image
+    with open(env_path, 'w+') as f:
+        yaml.dump(contents, f)
+#end set_custom_active_image()
+
 def set_active_image(env, image):
     if not is_image_in_environment(env, image):
         sys.stderr.write('{} does not exist in the environment. Please download it first.\n'.format(image))
@@ -117,6 +133,13 @@ def set_active_image(env, image):
         contents = yaml.load(f, Loader=yaml.SafeLoader)
 
     image_path = contents["IMAGE_PATHS"][image]
+    sys.stderr.write('Choose from the following images: \n')
+    count = 0
+    for p in image_path:
+        sys.stderr.write('{}: {}\n'.format(count, p))
+        count += 1
+    selection = input('Enter selection [{}-{}]: '.format(0, len(image_path) - 1))
+    image_path = image_path[int(selection)]
     sys.stderr.write('Setting {} as the active image.\n'.format(image_path))
 
     contents['ACTIVE_IMAGE'] = image_path
