@@ -92,6 +92,10 @@ def main():
     del_custom_binds_parser.add_argument('paths', nargs='+', help='List of directories to add to the env file.', type=str)
     del_custom_binds_parser.set_defaults(function=del_custom_binds_func)
 
+    list_custom_binds_parser = env_subparsers.add_parser('list-binds', help='Use this to list all of the custom bind paths added to your environment file.')
+    list_custom_binds_parser.add_argument('-e', '--env', type=str, default=get_active_env(), help='List of bind paths added to environment file.')
+    list_custom_binds_parser.set_defaults(function=list_custom_binds)
+
     args = parser.parse_args()
     try:
         args.function(args)
@@ -284,6 +288,23 @@ def del_custom_binds_func(args):
 
     remove_custom_bind_paths(paths)
 #end del_binds_func()
+
+def list_custom_binds(args):
+    env_path = os.path.join(get_environment_path(), args.env, args.env + '.yml')
+
+    with open(env_path, 'r') as f:
+        contents = yaml.load(f, Loader=yaml.SafeLoader)
+
+    bind_paths = contents['CUSTOM_BIND_PATHS']
+
+    if len(bind_paths) == 0:
+        sys.stderr.write('There are no bind paths set on this environment.\n')
+        return
+
+    sys.stderr.write('Custom bind paths are for {} are: \n'.format(args.env))
+    for p in bind_paths:
+        sys.stderr.write('\t- {}\n'.format(p))
+#end list_custom_binds()
 
 if __name__ == '__main__':
     main()
