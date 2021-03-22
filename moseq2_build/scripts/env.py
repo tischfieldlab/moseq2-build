@@ -69,13 +69,20 @@ def main():
     # Add image manually
     add_custom_image_parser = env_subparsers.add_parser('add-image', help='Add an image to use to the environment. THIS WILL COPY TO THE DIRECTORY STRUCTURE OF THE ENVIRONMENT.')
     add_custom_image_parser.add_argument('image', type=str, help='Path to the image file.')
-    add_custom_image_parser.add_argument('-e', '--env', default=get_active_env(), help='Environment to add the image to.')
+    add_custom_image_parser.add_argument('-e', '--env', required=True, default=None, help='Environment to add the image to.')
     add_custom_image_parser.add_argument('-a', '--activate', action='store_true', default=False, help='Activate the image passed in.')
     add_custom_image_parser.set_defaults(function=add_custom_image)
 
+    delete_custom_image_parser = env_subparsers.add_parser('del-image', help='Delete an image from the environment file.')
+    delete_custom_image_parser.add_argument('-i', '--image', type=str, default=None,
+        choices=['singularity', 'docker'], required=True, help='The image to delete from.')
+    delete_custom_image_parser.add_argument('-e', '--env', type=str, default=None, required=True,
+        help='The name of the environment to delete the image from.')
+    delete_custom_image_parser.set_defaults(function=delete_custom_image)
+
     # Get active image
     list_images_parser = env_subparsers.add_parser('list-image', help='List all of the images available for this environment.')
-    list_images_parser.add_argument('-e', '--env', type=str, default=get_active_env(), help='Environment to get the images for.')
+    list_images_parser.add_argument('-e', '--env', type=str, required=True, default=None, help='Environment to get the images for.')
     list_images_parser.set_defaults(function=list_images_parser_func)
 
      # List available flip files
@@ -93,7 +100,7 @@ def main():
     del_custom_binds_parser.set_defaults(function=del_custom_binds_func)
 
     list_custom_binds_parser = env_subparsers.add_parser('list-binds', help='Use this to list all of the custom bind paths added to your environment file.')
-    list_custom_binds_parser.add_argument('-e', '--env', type=str, default=get_active_env(), help='List of bind paths added to environment file.')
+    list_custom_binds_parser.add_argument('-e', '--env', type=str, default=None, required=True, help='List of bind paths added to environment file.')
     list_custom_binds_parser.set_defaults(function=list_custom_binds)
 
     args = parser.parse_args()
@@ -203,21 +210,55 @@ def add_custom_image(args):
     # If we are passing in a singularity image
     if str.endswith(image, 'sif'):
         root_dir = os.path.splitext(os.path.split(image)[-1])[0]
-        final_dir = os.path.join(env_path, root_dir)
+        final_dir = os.path.join(env_path, root_dir, root_dir + '.sif')
         try:
-            os.mkdir(final_dir)
+            os.mkdir(os.path.join(env_path, root_dir))
         except:
             sys.stderr.write('Error: Image already exists in the environment. Operation aborted.\n')
             return
         sys.stderr.write('Copying {} to {}.\n'.format(image, env_path))
         shutil.copy(image, final_dir)
-        add_custom_image_in_environment(env, final_dir + '.sif', 'singularity')
+        add_custom_image_in_environment(env, final_dir, 'singularity')
         if args.activate:
-            set_custom_active_image(env, final_dir + '.sif')
+            set_custom_active_image(env, final_dir)
 
     else:
         add_custom_image_in_environment(env, env_path, 'docker')
 #end add_custom_image()
+
+def delete_custom_image(args):
+    assert (args.env)
+    env_path = os.path.join(get_environment_path(), args.env, args.env + '.yml')
+
+    with open(env_path, 'r') as f:
+        contents = yaml.load(f, yaml.FullLoader)
+
+    image_path = contents['IMAGE_PATHS'][args.image]
+    sys.stderr.write('Choose to delete one of the following images: \n')
+    count = 0
+    for p in image_path:
+        sys.stderr.write('{}: {}\n'.format(count, p))
+        count += 1
+    selection = input('Enter selection [{}-{}]: '.format(0, len(image_path) - 1))
+    image_path = image_path[int(selection)]
+
+    containing_dir = os.path.dirname(image_path)
+    print(containing_dir)
+
+    try:
+        shutil.rmtree(containing_dir)
+    except:
+        sys.stderr.write('Could not delete {}\n'.format(containing_dir))
+        exit(-1)
+    sys.stderr.write('Deleted {}.\n'.format(image_path))
+
+    if contents['ACTIVE_IMAGE'] == image_path:
+        sys.stderr.write('\nWARNING: YOU HAVE DELETED THE ACTIVE IMAGE. PLEASE SET A NEW ONE BEFORE DOING ANY OTHER OPERATIONS.\n')
+        contents['ACTIVE_IMAGE'] = None
+
+    with open(env_path, 'w+') as f:
+        yaml.dump(contents, f)
+#end delete_custom_image()
 
 def activate_image_func(args):
     assert (args.name is not None)
@@ -229,6 +270,9 @@ def activate_image_func(args):
 def download_image_func(args):
     assert (args.name is not None)
     assert (args.image is not None)
+
+    print(args.name)
+    print(args.image)
 
     if args.image == 'all' and args.set_active is True:
         sys.stderr.write('WARNING: Cannot activate more than one image at once, so none will be activated.\n')

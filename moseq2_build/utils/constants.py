@@ -82,7 +82,6 @@ def get_active_image():
 
     if img == None:
         sys.stderr.write('There is no active image. Please activate one before proceeding by typing moseq2-env use-env --help.\n')
-        exit(1)
 
     return img
 #end get_active_image()

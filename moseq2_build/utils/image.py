@@ -105,9 +105,10 @@ def insert_image_in_environment(env, image):
         contents = yaml.load(f, Loader=yaml.SafeLoader)
 
     if contents['IMAGE_PATHS'] is None:
-        contents['IMAGE_PATHS'] = {image: image_path}
+        contents['IMAGE_PATHS'] = {image: [image_path]}
     else:
-        contents['IMAGE_PATHS'][image] = image_path
+        if not image in contents['IMAGE_PATHS'][image]:
+            contents['IMAGE_PATHS'][image].append(image_path)
 
     with open(env_path, 'w+') as f:
         yaml.dump(contents, f)
