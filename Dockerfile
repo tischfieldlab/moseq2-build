@@ -60,6 +60,9 @@ RUN source activate moseq2 \
     && cat /moseq2_data/argtable.yaml \
     && rm /tmp/argtable.py
 
+# Change the moseq2_data folder to readonly
+RUN chmod 0444 /moseq2_data
+
 # Create the requirements.txt file
 RUN source activate moseq2 \
     && pip freeze > /tmp/pipfreeze.txt  \
@@ -73,9 +76,9 @@ RUN source activate moseq2 \
 RUN echo 'source activate moseq2' >> ~/.bashrc
 
 # # Set up the new user
-RUN useradd -ms /bin/bash tischfieldlab
-USER tischfieldlab
-WORKDIR /home/tischfieldlab
+RUN useradd -ms /bin/bash mosequser
+USER mosequser
+WORKDIR /home/mosequser
 
 # Initialize the shell for conda and activate moseq2 on startupa
 SHELL ["conda", "run", "-n", "moseq2", "/bin/bash", "-c"]
