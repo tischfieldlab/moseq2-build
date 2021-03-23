@@ -38,7 +38,9 @@ RUN source ~/.bashrc \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-viz.git \
     && pip install git+https://${GIT_NAME}:${SERVICE_TOKEN}@github.com/tischfieldlab/moseq2-extras.git \
     # NOTE: THIS IS A HACK!!! LATEST VERSION OF SCIKIT DOES NOT WORK
-    && pip install "scikit-image==0.14.2" "scikit-learn==0.19.0" "scipy==1.2.3"
+    && pip install "scikit-image==0.14.2" "scikit-learn==0.19.0" "scipy==1.2.3" \
+    # NOTE: THIS IS A TEMP FIX FOR pybasicbayes PACKAGE... LATEST VERSION DOES NOT WORK!
+    && pip install "pybasicbayes==0.1.3"
 
 # Run tests to make sure all repos work
 RUN source activate moseq2 \
