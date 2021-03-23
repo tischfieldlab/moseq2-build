@@ -1,6 +1,14 @@
 name: Build Moseq2 Container
 
 on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Name of the dispatch.'
+        required: true
+      message:
+        description: 'Reason for dispatch.'
+        required: true
   repository_dispatch:
   push:
     branches: [master]
