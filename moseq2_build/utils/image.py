@@ -9,12 +9,24 @@ import getpass
 from moseq2_build.utils.constants import *
 
 def download_images(images, env, version):
+    """Downloads an image for the passed in environment given an optional version.
+
+    Args:
+        images (list (string)): Can be singularity|docker|all
+        env (string): Name of environment to download image to.
+        version (string): Tag version from the GitHub releases page.
+
+    Returns:
+        list (string): List of paths where each image was downloaded to.
+    """
     assert (len(images) != 0)
 
+    # Open the environment file to see if there is a PAT we can use to authenticate the request.
     p = os.path.join(get_environment_path(), env, env + '.yml')
     with open(p, 'r') as f:
         data = yaml.load(f, Loader=yaml.SafeLoader)
 
+        # If there is none, ask the user for one and store it for future use.
         if data == None or data['GITHUB_PAT'] == None:
             pat = getpass.getpass("Enter GitHub Personal Access Token (PAT): ")
             data['GITHUB_PAT'] = pat
@@ -23,19 +35,25 @@ def download_images(images, env, version):
         else: 
             pat = data['GITHUB_PAT']
 
+    # Format the URL to download the asset
     url = "https://" + pat + ':' + GITHUB_LINK
+    # This is if we have been given a version
     if version:
-        x = requests.get(url + '/tags/v' + version)
+        x = requests.get(url + '/tags/' + version)
     else:
         x = requests.get(url + '/latest')
 
+    # Ensure we receive a success code.
     if x.status_code != 200:
         sys.stderr.write('Failed to get release info.\n')
         exit(1)
 
     jsonData = x.json()
+    # Grab the list of assets from the returned JSON object.
     assets = jsonData['assets']
     result = []
+    # Loop through the images and their assets, and only download if the name matches the passed
+    # in image names  to this function.
     for image in images:
         for asset in assets:
             if image not in asset['name']:
@@ -45,15 +63,18 @@ def download_images(images, env, version):
             header = {'Accept': 'application/octet-stream'}
             finalURL = url + '/assets/' + releaseID
 
+            # Download the release assset by its ID
             x = requests.get(finalURL, headers=header, stream=True)
             if x.status_code != 200:
                 sys.stderr.write('Error downloading the asset.\n')
                 exit(1)
 
+            # Format TQDM for nice output
             totalSize = int(x.headers.get('content-length', 0))
             blockSize = 1024  # 1KB
             t = tqdm.tqdm(total=totalSize, unit='1B', unit_scale=True, desc='Downloading {}'.format(assetName))
 
+            # Generate the path where this will be downloaded to.
             assetOutput = os.path.join(os.path.join(get_environment_path(), env, assetName))
 
             with open(assetOutput, 'wb') as f:
@@ -63,6 +84,7 @@ def download_images(images, env, version):
 
             t.close()
 
+            # Because they are tarfiles, we simply untar them and remove the tar file.
             with tarfile.open(name=assetOutput) as tar:
                 pa = os.path.splitext(assetOutput)[0]
                 pa = os.path.splitext(pa)[0]
@@ -71,12 +93,20 @@ def download_images(images, env, version):
 
             os.remove(assetOutput)
 
+            # Add the path to the resulting array.
             result.append(pa)
 
     return result
 #end download_images()
 
 def add_custom_image_in_environment(env, image, image_type):
+    """Adds an image manually to an environment.
+
+    Args:
+        env (string): Name of the environment.
+        image (string): Path to the image.
+        image_type (string): Can be singularity|docker.
+    """
     env_path = os.path.join(get_environment_path(), env, env + '.yml')
 
     with open(env_path, 'r') as f:
@@ -93,10 +123,12 @@ def add_custom_image_in_environment(env, image, image_type):
 #end add_custom_image_in_environment()
 
 def insert_image_in_environment(env, image):
-    # if is_image_in_environment(env, image):
-        # sys.stderr.write('Error: Image already exists in the environment.')
-        # return
+    """Inserts an image into the environment file.
 
+    Args:
+        env (string): Name of the environment.
+        image (string): Path to the image to add.
+    """
     env_path = os.path.join(get_environment_path(), env, env + '.yml')
     image_path = get_image_paths(env, image)
 
@@ -115,6 +147,12 @@ def insert_image_in_environment(env, image):
 #end insert_image_in_environment()
 
 def set_custom_active_image(env, image):
+    """Use custom image as the active one.
+
+    Args:
+        env (string): Name of the environment.
+        image (string): Path to the image to add.
+    """
     env_path = os.path.join(get_environment_path(), env, env + '.yml')
     with open(env_path, 'r') as f:
         contents = yaml.load(f, Loader=yaml.SafeLoader)
@@ -125,6 +163,12 @@ def set_custom_active_image(env, image):
 #end set_custom_active_image()
 
 def set_active_image(env, image):
+    """Set the passed in image as the active one for the passed in environment.
+
+    Args:
+        env (string): Name of the environment.
+        image (string): Path to the image to add.
+    """
     if not is_image_in_environment(env, image):
         sys.stderr.write('{} does not exist in the environment. Please download it first.\n'.format(image))
         exit(1)
@@ -149,6 +193,15 @@ def set_active_image(env, image):
 #end set_active_image()
 
 def is_image_in_environment(env, image):
+    """Determines if the passed in image exists in the environment.
+
+    Args:
+        env (string): Name of the environment.
+        image (string): Path to the image to add.
+
+    Returns:
+        boolean: True if image exists, False if it does not.
+    """
     env_path = os.path.join(get_environment_path(), env, env + '.yml')
 
     with open(env_path, 'r') as f:

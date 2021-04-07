@@ -15,6 +15,8 @@ import sys
 from moseq2_build.utils.constants import get_environment_manifest, get_environment_path
 
 def create_manifest_file():
+    """Creates the global manifest file where all metadata about each environment is stored.
+    """
     man_path = get_environment_manifest()
 
     if os.path.isfile(man_path) is True:
@@ -33,6 +35,8 @@ def create_manifest_file():
 #end create_manifest_file()
 
 def delete_manifest_file():
+    """Deletes the manfiest file.
+    """
     man_path = get_environment_manifest()
 
     if os.path.isfile(man_path) is False:
@@ -46,10 +50,23 @@ def delete_manifest_file():
 #end delete_manifest_file()
 
 def is_manifest_created():
+    """Determines if the manifest file exists or not.
+
+    Returns:
+        boolean: True if it exists, False if it does not.
+    """
     return os.path.isfile(get_environment_manifest())
 #end is_manifest_created()
 
 def is_in_manifest(key):
+    """Determines if passed in key is in the manifest.
+
+    Args:
+        key (string): Name of the environment.
+
+    Returns:
+        boolean: True if the key exists, False if it does not.
+    """
     if is_manifest_created() is False:
         sys.stderr.write('No manifest file exists, please create one first.\n')
         return False
@@ -66,6 +83,14 @@ def is_in_manifest(key):
 #end is_in_manifest()
 
 def delete_from_manifest(key):
+    """Deletes an environment from the manifest file.
+
+    Args:
+        key (string): Environment to delete.
+
+    Returns:
+        boolean: True if it was delete, False if it was not.
+    """
     if is_manifest_created() is False:
         sys.stderr.write('No manifest file exists, please create one first.\n')
         return False
@@ -105,6 +130,15 @@ def delete_from_manifest(key):
 #end delete_from_manifest()
 
 def put_in_manifest(key, active=False):
+    """Puts an environment into the manifest.
+
+    Args:
+        key (string): Name of the environment.
+        active (bool, optional): If the environment is active or not. Defaults to False.
+
+    Returns:
+        [type]: [description]
+    """
     if is_manifest_created() is False:
         sys.stderr.write('No manifest file exists, please create one first.\n')
         return False
@@ -131,6 +165,15 @@ def put_in_manifest(key, active=False):
 #end put_in_manifest()
 
 def set_active_row(key, val):
+    """Sets the environment to be active or not.
+
+    Args:
+        key (string): Name of the environment.
+        val (boolean): If the environment is to be active (True) or not (False).
+
+    Returns:
+        boolean: Returns true if the environment's active status was set successfully.
+    """
     if is_manifest_created() is False:
         sys.stderr.write('No manifest file exists, please create one first.\n')
         return False
@@ -169,6 +212,14 @@ def set_active_row(key, val):
 #end set_active_row()
 
 def is_active_row(key):
+    """Determines if the key is active in the manifest.
+
+    Args:
+        key (string): Name of the environment.
+
+    Returns:
+        boolean: True if key is active, False if it is not.
+    """
     if is_manifest_created() is False:
         sys.stderr.write('No manifest file exists, please create one first.\n')
         return False
@@ -185,6 +236,11 @@ def is_active_row(key):
 #end is_active_row()
 
 def contains_active_row():
+    """Determines if the manifest has an active entry.
+
+    Returns:
+        boolean: True if there is an active row, False if not.
+    """
     if is_manifest_created() is False:
         sys.stderr.write('No manifest file exists, please create one first.\n')
         return False

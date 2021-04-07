@@ -111,6 +111,11 @@ def main():
 #end main()
 
 def create_env_func(args):
+    """Creates an environment and a manifest if one isn't already created.
+
+    Args:
+        args (ArgParse Arguments): A list of arguments from argparse.
+    """
     assert (args.name is not None)
 
     # Make sure the manifest file exists
@@ -126,10 +131,12 @@ def create_env_func(args):
         os.mkdir(os.path.join(get_environment_path(), args.name))
         f_path = os.path.join(get_environment_path(), args.name, args.name + '.yml')
         with open(f_path, 'w') as f:
+            # Here we default certain keys in the environment to None until they are overwritten by the user.
             cons = {"GITHUB_PAT": None, "IMAGE_PATHS": None, "ACTIVE_IMAGE": None, "CUSTOM_BIND_PATHS": []}
             yaml.dump(cons, f)
         sys.stderr.write('Environment config created at {}.\n'.format(f_path))
 
+        # If the flag to download an image from releases is passed, we do that here.
         if args.download_image:
             download_args = Namespace(name=args.name, image=args.download_image,
                 set_active=args.set_active_image, version=None)
@@ -140,6 +147,11 @@ def create_env_func(args):
 #end create_env_func()
 
 def delete_env_func(args):
+    """Deletes an environment from disk and the manifest.
+
+    Args:
+        args (ArgParse Arguments): A list of arguments from argparse.
+    """
     assert (args.name is not None)
 
     # Make sure the manifest is created
@@ -147,7 +159,7 @@ def delete_env_func(args):
         sys.stderr.write('Manifest file is not created, please make sure one is created before deleting.\n')
         exit(1)
 
-    # Delete the entry from the manifest
+    # Delete the entry from the manifest, returns True if it was successfully deleted.
     res = delete_from_manifest(args.name)
 
     # If we deleted successfully, remove the file from disk
@@ -157,22 +169,33 @@ def delete_env_func(args):
 #end delete_env_func()
 
 def curr_env_func(args):
+    """Prints the currently active function, if one is set.
+    """
     print('Currently active image is: {}'.format(get_active_env()))
 #end curr_env_func()
 
 def list_env_func(args):
+    """Lists all environments created on disk.
+
+    Args:
+        args (ArgParse Arguments): List of arguments from argparse.
+    """
     assert (args.active_only is not None)
 
+    # Ensure that the manifest exists, otherwise we crash and burn here.
     if is_manifest_created() is False:
         sys.stderr.write('No manifest is created, please create one first.\n')
         exit(1)
 
     man_path = get_environment_manifest()
+    
+    # Set up the output table headers here... TODO: maybe these shouldn't be hardcoded?
     contents = [['Name', 'Active']]
     with open(man_path, 'r') as tsv_file:
         reader = csv.reader(tsv_file, delimiter='\t')
 
         for row in reader:
+            # If the row is active, we want to make sure that True is set on the active flag.
             if args.active_only is True:
                 if row[1] == 'True':
                     contents.append(row)
@@ -185,16 +208,31 @@ def list_env_func(args):
 #end list_env_func()
 
 def activate_env_func(args):
+    """Activates the passed in environment.
+
+    Args:
+        args (ArgParse Arguments): List of arguments from argparse.
+    """
     assert (args.name is not None)
     set_active_row(args.name, True)
 #end activate_env_func()
 
 def deactivate_env_func(args):
+    """Deactivates the passed in environment.
+
+    Args:
+        args (ArgParse Arguments): List of arguments from argparse.
+    """
     assert (args.name is not None)
     set_active_row(args.name, False)
 #end deactivate_env_func()
 
 def list_classifiers_func(args):
+    """Lists the installed classifiers inside the containerized image.
+
+    Args:
+        args (ArgParse Arguments): List of arguments from argparse.
+    """
     flips = get_all_classifiers()
 
     sys.stderr.write('Available flip files are: \n')
@@ -203,36 +241,57 @@ def list_classifiers_func(args):
 #end list_classifiers_func()
 
 def add_custom_image(args):
+    """Add a custom image to an environment. NOTE: This will copy the image to the environment folder structure.
+
+    Args:
+        args (ArgParse Arguments): List of arguments from argparse.
+    """
     image = os.path.abspath(args.image)
     env = args.env
     env_path = os.path.join(get_environment_path(), env)
 
     # If we are passing in a singularity image
     if str.endswith(image, 'sif'):
+        # Grab the root directory of the passed in image
         root_dir = os.path.splitext(os.path.split(image)[-1])[0]
+
+        # Format the destination directory to remove the sif extension
         final_dir = os.path.join(env_path, root_dir, root_dir + '.sif')
         try:
             os.mkdir(os.path.join(env_path, root_dir))
         except:
             sys.stderr.write('Error: Image already exists in the environment. Operation aborted.\n')
             return
+
         sys.stderr.write('Copying {} to {}.\n'.format(image, env_path))
         shutil.copy(image, final_dir)
+
+        # Add the image to the environment
         add_custom_image_in_environment(env, final_dir, 'singularity')
+
+        # If we are told to activate the image by the user, activate it in the manifest.
         if args.activate:
             set_custom_active_image(env, final_dir)
 
+    # This is the case where the image is a docker image
     else:
         add_custom_image_in_environment(env, env_path, 'docker')
 #end add_custom_image()
 
 def delete_custom_image(args):
+    """Deletes a custom image from the environment.
+
+    Args:
+        args (ArgParse Arguments): List of arguments from argparse.
+    """
     assert (args.env)
     env_path = os.path.join(get_environment_path(), args.env, args.env + '.yml')
 
     with open(env_path, 'r') as f:
         contents = yaml.load(f, yaml.FullLoader)
 
+    # Because custom images may be a pain to deal with, we list all of the images in the 
+    # environment directory structure and ask the user which to delete on the command line.
     image_path = contents['IMAGE_PATHS'][args.image]
     sys.stderr.write('Choose to delete one of the following images: \n')
     count = 0
@@ -243,7 +302,6 @@ def delete_custom_image(args):
     image_path = image_path[int(selection)]
 
     containing_dir = os.path.dirname(image_path)
-    print(containing_dir)
 
     try:
         shutil.rmtree(containing_dir)
@@ -252,6 +310,7 @@ def delete_custom_image(args):
         exit(-1)
     sys.stderr.write('Deleted {}.\n'.format(image_path))
 
+    # If we deleted the active image, we need to let the user know that there is no current active image.
     if contents['ACTIVE_IMAGE'] == image_path:
         sys.stderr.write('\nWARNING: YOU HAVE DELETED THE ACTIVE IMAGE. PLEASE SET A NEW ONE BEFORE DOING ANY OTHER OPERATIONS.\n')
         contents['ACTIVE_IMAGE'] = None
@@ -261,6 +320,11 @@ def delete_custom_image(args):
 #end delete_custom_image()
 
 def activate_image_func(args):
+    """Sets the passed in image to be the active image. There can only be one at a time.
+
+    Args:
+        args (ArgParse Arguments): List of arguments from argparse.
+    """
     assert (args.name is not None)
     assert (args.image is not None)
 
@@ -268,11 +332,13 @@ def activate_image_func(args):
 #end activate_image_func()
 
 def download_image_func(args):
+    """Downloads an image based on the passed in container information and GitHub tag.
+
+    Args:
+        args (ArgParse Arguments): List of arguments from argparse.
+    """
     assert (args.name is not None)
     assert (args.image is not None)
-
-    print(args.name)
-    print(args.image)
 
     if args.image == 'all' and args.set_active is True:
         sys.stderr.write('WARNING: Cannot activate more than one image at once, so none will be activated.\n')
@@ -297,6 +363,11 @@ def download_image_func(args):
 #end download_image_func()
 
 def list_images_parser_func(args):
+    """Lists all the images installed in an environment.
+
+    Args:
+        args (ArgParse Arguments): List of arguments from argparse.
+    """
     active_image = get_active_image()
 
     env_path = os.path.join(get_environment_path(), args.env, args.env + '.yml')
@@ -306,9 +377,11 @@ def list_images_parser_func(args):
 
     image_paths = contents["IMAGE_PATHS"]
 
+    # Here is where we loop through the image paths and print them out, formatting them and denoting which is active.
     for k in image_paths:
         sys.stderr.write('{}: \n'.format(k))
         for p in image_paths[k]:
+            # Show the image is active here
             if p == active_image:
                 sys.stderr.write('[ACTIVE] - {}\n'.format(p))
             else:
@@ -316,6 +389,11 @@ def list_images_parser_func(args):
 #end list_images_parser_func()
 
 def add_custom_binds_func(args):
+    """Adds custom bind paths to the environment that are shadow bound on all calls into an image.
+
+    Args:
+        args (ArgParse Arguments): List of arguments from argparse.
+    """
     paths = []
     for p in args.paths:
         p = os.path.abspath(p)
@@ -325,6 +403,11 @@ def add_custom_binds_func(args):
 #end custom_binds_func()
 
 def del_custom_binds_func(args):
+    """Delete custom binds from the environment.
+
+    Args:
+        args (ArgParse Arguments): List of arguments from argparse.
+    """
     paths = []
     for p in args.paths:
         p = os.path.abspath(p)
@@ -334,11 +417,17 @@ def del_custom_binds_func(args):
 #end del_binds_func()
 
 def list_custom_binds(args):
+    """Lists all of the custom bind paths configured for an environment.
+
+    Args:
+        args (ArgParse Arguments): List of arguments from argparse.
+    """
     env_path = os.path.join(get_environment_path(), args.env, args.env + '.yml')
 
     with open(env_path, 'r') as f:
         contents = yaml.load(f, Loader=yaml.SafeLoader)
 
+    # Pull the value for this key in the environment metadata yaml file.
     bind_paths = contents['CUSTOM_BIND_PATHS']
 
     if len(bind_paths) == 0:

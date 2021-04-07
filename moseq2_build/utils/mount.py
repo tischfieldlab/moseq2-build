@@ -4,9 +4,19 @@ import sys
 import yaml
 import re
 
-from moseq2_build.utils.constants import get_classifier_path, get_custom_bind_paths
+from moseq2_build.utils.constants import get_custom_bind_paths
 
 def mount_dirs(remainder, mount_string, argtable):
+    """Generates a string to be used to mount properly during image invocation.
+
+    Args:
+        remainder (ArgParse UnkownArguments): List of unkown arguments to be passed to the image file as arguments to the script.
+        mount_string (string): Command prefix or suffix used to mount for a given image.
+        argtable (Dictionary <string, string>: List of arguments we care about that can result in mounting inside the image.
+
+    Returns:
+        string: Flattened list of mount directories correctly formatted for the image in use.
+    """
     pathKeys = []
     if (len(remainder) == 0):
         return ''
@@ -28,6 +38,15 @@ def mount_dirs(remainder, mount_string, argtable):
 #end mount_dirs()
 
 def mount_additional_dirs(other_dirs, mount_string):
+    """Generates mount command for custom bind paths.
+
+    Args:
+        other_dirs (list (string)): List of paths gathered from the CUSTOM_BIND_PATHS key in the environment.
+        mount_string (string): Command prefix or suffix used to mount for a given image.
+
+    Returns:
+        string: Flattened list of mount directories correctly formatted for the image in use.
+    """
     if other_dirs is None:
         other_dirs = []
 
@@ -49,6 +68,15 @@ def mount_additional_dirs(other_dirs, mount_string):
 #end mount_additional_dirs()
 
 def compute_mount_com(pathKeys, mount_string):
+    """Computes the flattened string containing the mount commands for the paths passed in.
+
+    Args:
+        pathKeys (list (string)): List of paths to be mounted.
+        mount_string (string): Command prefix or suffix used to mount for a given image.
+
+    Returns:
+        string: Flattened list of mount directories correctly formatted for the image in use.
+    """
     mount_com = ''
     # Pattern for matching windows root folder
     pattern = re.compile(r'^[a-zA-Z]:\\')
